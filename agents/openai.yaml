@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Development"
+  short_description: "Project-aware development with traceable review"
+  default_prompt: "Use $project-development to integrate this project's context and complete the requested development stage in my preferred output language."

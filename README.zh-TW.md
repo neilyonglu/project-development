@@ -1,6 +1,6 @@
 # project-development
 
-沿用作者的開發邏輯：先整合當前專案特點、流程與可用依賴，再按需求進行分析、設計、拆解、實作、驗證與雙重審查。提供需求到實作／驗收的追溯，以及可編輯的 HTML 架構與測試視圖。
+依專案特點執行需求、設計、實作與可追溯審查的開發 skill。沿用作者的開發邏輯：先整合當前專案特點、流程與可用依賴，再按需求進行分析、設計、拆解、實作、驗證與雙重審查。提供需求到實作／驗收的追溯，以及可編輯的 HTML 架構與測試視圖。
 
 [English](README.md) | 繁體中文
 
@@ -16,13 +16,61 @@
 
 語言涵蓋回覆、工作文件、審查與圖表說明。程式名稱、API／DB 欄位、命令、路徑與原文引用保持原樣；既有專案文件不因切換而全部翻譯。
 
-## 安裝與使用
+## 快速安裝
 
-將整個 `project-development/` 目錄放入目標代理支援的 skills 目錄，保留 SKILL.md、references、scripts、assets。Claude Code 的專案安裝位置可用 `.claude/skills/project-development/`；其他代理使用各自支援的目錄與呼叫語法。移除時只移除已安裝的 skill 目錄，保留專案工作文件與脈絡。
+需要 Node.js/npm 與 Git。在要使用這份 skill 的專案目錄執行：
 
-例如：「使用 project-development，先整合此專案的特點與流程，再分析這份需求」；「使用 project-development，依已確認的計畫完成實作與驗證」。只要求某階段就只做該階段；脈絡已建立時沿用並核對相關變動。
+```bash
+npx skills add neilyonglu/project-development --skill project-development
+```
 
-專案脈絡與工作文件留在各自 repository，公開發行包不包含真實專案資料、私人 issue 或憑證。發布只打包此目錄，排除 `__pycache__`、`*.pyc` 與本機暫存。此修改不代表已發布、安裝至其他代理或完成跨代理驗證。
+依提示選擇開發代理。也可以直接指定工具，免互動完成專案安裝：
+
+```bash
+# Codex
+npx skills add neilyonglu/project-development --skill project-development --agent codex --yes
+
+# Claude Code
+npx skills add neilyonglu/project-development --skill project-development --agent claude-code --yes
+```
+
+需要跨專案使用時，在上述命令加上 `--global`；環境不支援符號連結時加上 `--copy`。這些命令使用 [Skills CLI](https://github.com/vercel-labs/skills)。
+
+查看可安裝的 skill、更新已安裝 skill 或移除：
+
+```bash
+npx skills add neilyonglu/project-development --list
+npx skills update project-development
+npx skills remove project-development
+```
+
+也可以下載 [main ZIP](https://github.com/neilyonglu/project-development/archive/refs/heads/main.zip)，或在代理支援的 skills 目錄內直接 clone：
+
+```bash
+git clone https://github.com/neilyonglu/project-development.git project-development
+```
+
+保留完整目錄，包含 `references/`、`scripts/`、`assets/` 與 `agents/`。直接 Git 安裝可執行 `git -C project-development pull --ff-only` 更新；遇到分岔的本機歷史會停止，不覆蓋修改。
+
+## 第一次使用
+
+Codex：
+
+```text
+使用 $project-development，先整合此專案的架構、特點、開發流程與可用工具，再分析我提供的需求。輸出用繁體中文。
+```
+
+Claude Code：
+
+```text
+/project-development 先整合此專案脈絡，再分析我提供的需求。輸出用繁體中文。
+```
+
+英文模式：「Use project-development with English output」。兩種語言共用英文工作指令，沿用你的專案流程；可只要求某階段，也可授權連續開發。已有專案脈絡時只核對相關變動。
+
+## 安裝範圍與打包
+
+專案脈絡與工作文件留在各自 repository，這個 repository 只放可重用的 skill。發行排除 `__pycache__`、`*.pyc`、本機暫存、私人 issue／專案資料與憑證。成功安裝不代表產品功能或完整跨代理流程已驗證。
 
 ## 相依與替代
 
@@ -51,4 +99,4 @@
 
 設計參考（未複製其程式或完整指令）：[Superpowers](https://github.com/obra/superpowers) 的驗證證據與流程分級、[Spec Kit](https://github.com/github/spec-kit) 的技術脈絡與複雜度理由、[create-feature](https://github.com/garethrhughes/skills/blob/main/create-feature/SKILL.md) 的共通／專案規則分層與審查交接。
 
-本 skill 使用 [MIT License](LICENSE)。首次發行可用 Git tag `v0.1.0`；公開 repository 位址尚未設定，不提供虛構安裝 URL。
+本 skill 使用 [MIT License](LICENSE)，版本為 `0.1.0`。原始碼：[neilyonglu/project-development](https://github.com/neilyonglu/project-development)。

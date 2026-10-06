@@ -1,7 +1,10 @@
 ---
 name: project-development
 license: MIT
-description: First integrate the current project's conventions, architecture, workflow and available dependencies, then guide staged development through requirements analysis, framework and DB design, flows, interface contracts, acceptance scenarios, implementation planning, implementation and review. Use for explicit project-development workflows or their requested stages. Select only the requested stage; do not apply the entire process to routine small fixes or reviews.
+metadata:
+  author: neilyonglu
+  version: "0.1.0"
+description: Integrate project-specific architecture, conventions and tool dependencies, then guide requirements analysis, design, acceptance, planning, implementation and two-pass review. Use for project-development workflows or a requested stage; keep routine small fixes scoped. Supports English and Traditional Chinese deliverables.
 ---
 
 # Project Development
