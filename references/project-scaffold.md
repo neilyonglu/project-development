@@ -18,7 +18,7 @@ Requests to understand the project, framework or DB design remain explanation/de
 
 ## 2. Necessary skeleton
 
-Create required directories, entrypoints, contracts, configuration and startup using existing naming, errors, identity and data access. Check cross-layer companions such as UI routes/calls, backend entrypoints, service/Domo and metadata.
+Create required directories, entrypoints, contracts, configuration and startup using existing naming, errors, identity and data access. Check cross-layer companions such as UI routes/calls, backend entrypoints, service/domain handler and metadata.
 
 Label pending business algorithms. Never disguise incomplete flows with fixed success responses. Extend necessary structure for existing features rather than creating another project.
 

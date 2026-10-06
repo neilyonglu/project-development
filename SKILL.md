@@ -54,11 +54,11 @@ Build implementation diagrams, including file walkthrough progress, from the sel
 - Requests to understand or discuss a design stay in explanation/proposal mode. Do not infer construction permission from a discussion or preview.
 - Unresolved choices affecting the framework, core model, permissions or writes block their dependent work, not independent work.
 - Reuse the real framework and upgrade mechanism in existing projects. Evaluate frameworks for new projects; this skill does not imply rebuilding, adding tables or expanding scope.
-- Document units follow project context. Forge uses one document per issue, updated throughout the work. A guide's "issue/work document" means the current project's chosen unit; other projects need not adopt Forge's platform, numbering or directory.
+- Document units follow project context. An issue-based project may use one document per issue, updated throughout the work. A guide's "issue/work document" means the current project's chosen unit; do not impose another project's platform, numbering or directory.
 - Reuse confirmed unchanged design; do not reanalyze the whole issue or demand every preceding artifact at each stage.
 - Maintain requirements → design/tasks → implementation locations → acceptance cases/results in the original work document. Each in-scope requirement has a destination; each change has a requirement or necessary technical basis. Address omissions and scope drift without inventing requirements.
 - Shared checks are defined in the relevant guide and referenced elsewhere. Keep responsibility, authorization and links consistent. Design confirmed, code written, tests passed and ready to publish are different states.
 
-Examples: use issue-analysis for #92; use project-scaffold to build the modules and migration files needed by confirmed requirements.
+Examples: use issue-analysis for #101; use project-scaffold to build the modules and migration files needed by confirmed requirements.
 
 Locate this skill's scripts and assets from its actual loaded directory, not a fixed `.claude/skills` path. See [README](README.md) for packaging and evaluation.

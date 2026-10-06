@@ -5,7 +5,7 @@ Understand how this project is developed before applying the stage workflow. Pre
 ## Create or reuse
 
 1. Identify the repository and task scope. Read applicable AGENTS.md, CLAUDE.md and project conventions; check the nearest real module, manifests, build scripts and CI.
-2. Reuse an existing profile or equivalent document and its location. Otherwise use the customary project documentation directory, for example `doc/dev/project-development-profile.md`. Keep real project data in the project, outside the distributed skill.
+2. Reuse an existing profile or equivalent document and its location. Otherwise use the customary project documentation directory, for example `docs/development/project-development-profile.md`. Keep real project data in the project, outside the distributed skill.
 3. Integrate enough context for the current task, mark unchecked areas and extend as needed. Refresh only relevant or changed facts; do not require a complete repository survey before proceeding.
 
 ## Content
@@ -25,7 +25,7 @@ Include sources, applicable modules, verification date and status. Separate conf
 ## Use in stages
 
 - Link the profile from the work document. Keep the five-part analysis and reference shared context rather than copying it into each issue. Without an issue, identify the work by requirements title and source.
-- Follow project conventions: Forge's Domo, PX1, GitLab and one-document-per-issue workflow remain applicable to Forge. Other projects use their own evidence; do not transplant Forge APIs or fields.
+- Follow the actual project's domain handlers, services, hosting platform and document conventions. For example, a sample shop application may use an order API, a notification service and one document per issue. Do not transplant another project's APIs or fields.
 - At entry, check sufficient inputs, authorization and required capabilities. At exit, record artifacts, evidence, unresolved questions and next executable work. Continue under existing cross-stage authorization without asking for it again.
 - Backfill affected designs/cases when contracts or requirements are incomplete. Return to affected implementation for test/review findings. Recheck only affected scope while preserving the document and traceability.
 - Prefer applicable available external review skills, otherwise perform both [review passes](review-delivery.md) locally and identify the method. If remote requirements cannot be accessed, use provided material without claiming complete reading. Missing necessary runtime/DB means verification remains unperformed.
@@ -35,3 +35,5 @@ Include sources, applicable modules, verification date and status. Separate conf
 ## Refresh
 
 Refresh relevant sections when architecture, paths, conventions, CI, tools or delivery practices change. Retain significant decisions and sources; reuse unchanged items. A profile's existence proves neither that all dependencies were verified nor that product acceptance passed.
+
+Use fictional or neutral names in public documentation, templates and demonstrations. Do not publish company-internal names, real internal issues or implementation examples. Keep actual project context in its project, outside this public skill.

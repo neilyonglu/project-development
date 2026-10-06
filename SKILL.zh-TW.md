@@ -56,11 +56,11 @@ description: Integrate project-specific architecture, conventions and tool depen
 - 使用者正在理解專案或確認設計時，停留在說明與方案階段；不得把討論或試看流程解讀為實際建構授權。
 - 會改變框架、核心資料模型、權限或寫入方式的未解需求，阻擋相依建構；不阻擋其他可獨立完成的工作。
 - 既有專案沿用既有框架與升級機制，新專案才評估框架選擇。不因選擇此 skill 就重建專案、增加新表或擴大 scope。
-- 需求與工作文件單位依專案脈絡；Forge 採一個 issue 一份文件，後續結果更新原文件。各細項的「issue 文件」指本專案選定的工作文件，不強迫其他專案採相同平台、編號或目錄。
+- 需求與工作文件單位依專案脈絡；例如以 issue 管理工作的專案，可採一個 issue 一份文件並持續更新。各細項的「issue 文件」指本專案選定的工作文件，不強迫其他專案採相同平台、編號或目錄。
 - 讀取目前階段需要的段落與相依設計；已確認且未變動的內容沿用，不要求每一階段重新分析完整 issue 或建立所有前置文件。
 - 在原 issue 文件維持需求 → 設計／工作項目 → 實作位置 → 驗收案例／結果的對應，可用小表或既有標題引用。每項本期需求有落點，每項改動有需求或必要技術依據；發現遺漏或超出範圍時記錄並處理，不擅自擴大需求。
 - 共通檢查以細項中的原規則為準，其他階段引用而不複製；更新 skill 時核對階段責任、授權邊界與連結一致。設計確認、程式已寫、測試通過與可發布是不同狀態。
 
-呼叫範例：使用 project-development 的 issue-analysis 分析 #92；使用 project-development 的 project-scaffold 建立已確認需求所需的模組與 DB 變更檔。
+呼叫範例：使用 project-development 的 issue-analysis 分析 #101；使用 project-development 的 project-scaffold 建立已確認需求所需的模組與 DB 變更檔。
 
 Skill 自己的檔案、腳本、範本都從實際載入的 skill 目錄定位，不假定安裝在 `.claude/skills`。發行與情境驗證方式見 [README](README.md)。

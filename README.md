@@ -88,8 +88,8 @@ For real agent evaluations record agent/version, inputs, fixture, artifacts, act
 
 | Scenario | Expected observation |
 |---|---|
-| Forge-like, analysis only | Integrate Domo/GitLab/document rules; five-part analysis without product/DB changes |
-| Different stack, no issue | Use actual project context, not Forge APIs/platform or fabricated issues |
+| Sample multi-module project, analysis only | Integrate domain/service/platform/document conventions; five-part analysis without product/DB changes |
+| Different stack, no issue | Use actual project context, not another project's APIs/platform or fabricated issues |
 | Existing context/partial design, implementation authorized | Check relevant changes/gaps and reuse work document without recreating every artifact |
 | Review skills missing | Complete and identify two local review passes |
 | Rules/manifest conflict, missing requirements | Preserve sources/questions; block dependent work only, without invented policy |

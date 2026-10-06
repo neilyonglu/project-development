@@ -2,7 +2,7 @@
 
 本文件為中文閱讀版；代理執行時使用上層英文同名指引。輸出語言依英文入口的設定，中文模式使用繁體中文，技術識別字保持原樣。
 
-[審查與交付確認](review-delivery.md) 第二步的架構圖，以及逐檔審查時用來追進度的同一張圖，都從 [範本](../../assets/architecture-diagram.html) 開始。複製範本到 issue 文件旁，例如 `doc/dev/issue-<n>-architecture.html`。版面、圖例、Part 分頁、測試開關、縮放、hover 說明與點擊卡片都已在範本內，不另寫 CSS／JS；只填下列資料區塊。
+[審查與交付確認](review-delivery.md) 第二步的架構圖，以及逐檔審查時用來追進度的同一張圖，都從 [範本](../../assets/architecture-diagram.html) 開始。複製範本到 issue 文件旁，例如 `docs/development/issue-<n>-architecture.html`。版面、圖例、Part 分頁、測試開關、縮放、hover 說明與點擊卡片都已在範本內，不另寫 CSS／JS；只填下列資料區塊。
 
 中文模式使用原中文範本；英文模式使用 [英文範本](../../assets/architecture-diagram.en.html)，設 `lang="en"`。可見文字、meaning、detail、funcs、Part 與連線說明使用所選語言；不改資料 key、節點 ID 或路徑。英文的第 0 個 tab 為 `All`，中文為「全部」；styles 的全形分隔符 `：` 維持原樣。
 
@@ -74,7 +74,7 @@
 
 ```json
 [{"tab": "全部", "note": "完整架構圖：所有 part 合起來，不標新加的部分。"},
- {"tab": "Part 1 · #92", "note": "branch …：這一層加了什麼"}]
+ {"tab": "Part 1 · #101", "note": "branch …：這一層加了什麼"}]
 ```
 
 第 0 個固定是「全部」。`note` 用一兩句說這個 branch 加了什麼。

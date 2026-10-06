@@ -78,7 +78,7 @@
   <div class="legend-body">
     <section>
       <h3>整體</h3>
-      <p>一個請求從上往下走：<b>畫面（Frontend）</b> → <b>Java</b> → <b>px1</b> → <b>資料庫</b>，結果再沿原路回來。上方的 Part 分頁對應四個 branch，Part N 只畫到第 N 層為止。</p>
+      <p>請求依專案實際分層往下走，再把結果回傳給呼叫端。上方的 Part 分頁對應合併順序，Part N 顯示到第 N 層。請依本次專案架構更新這段範例說明。</p>
     </section>
     <section>
       <h3>方框代表什麼</h3>
@@ -96,7 +96,7 @@
       <h3>箭頭代表什麼</h3>
       <ul class="keys">
         <li><span class="ln"></span>呼叫或讀寫；箭頭上的字是「送什麼 → 拿回什麼」</li>
-        <li><span class="ln thick"></span>跨層的呼叫，例如 Java 呼叫 px1</li>
+        <li><span class="ln thick"></span>跨層的呼叫，例如後端呼叫通知服務</li>
         <li><span class="ln dot"></span>往回傳的結果</li>
         <li><span class="num">①②③</span>同一個地方依序做的步驟，一步做完才做下一步</li>
       </ul>

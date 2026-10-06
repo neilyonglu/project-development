@@ -1,6 +1,6 @@
 # Implementation Architecture HTML
 
-Use the same diagram for step 2 of [review and delivery](review-delivery.md) and file walkthrough progress. For `zh-TW`, copy [Chinese template](../assets/architecture-diagram.html); for `en`, copy [English template](../assets/architecture-diagram.en.html). Put the view beside its work document, for example `doc/dev/issue-<n>-architecture.html` under Forge conventions. Both templates share CSS/JS behavior and schema; populate data rather than rewriting controls.
+Use the same diagram for step 2 of [review and delivery](review-delivery.md) and file walkthrough progress. For `zh-TW`, copy [Chinese template](../assets/architecture-diagram.html); for `en`, copy [English template](../assets/architecture-diagram.en.html). Put the view beside its work document, for example `docs/development/issue-<n>-architecture.html` in a sample project. Both templates share CSS/JS behavior and schema; populate data rather than rewriting controls.
 
 ## Data sections
 
@@ -13,7 +13,7 @@ Use the same diagram for step 2 of [review and delivery](review-delivery.md) and
 | `<script type="application/json" id="parts">` | Part tabs and notes |
 | Files omitted from diagram | `<li data-file="repository-relative-path"><code>path</code>reason</li>` |
 
-Replace the complete example order content, including legend assumptions, node descriptions, part notes and omission reasons, with this work's facts. Keep IDs/files/API/DB names unchanged; use the selected language for prose and visible controls. Do not retain sample nodes or a Forge-specific layered legend in unrelated projects.
+Replace the complete example order content, including legend assumptions, node descriptions, part notes and omission reasons, with this work's facts. Keep IDs/files/API/DB names unchanged; use the selected language for prose and visible controls. Do not retain sample nodes or another project's layered legend in unrelated projects.
 
 ## src: nodes
 
@@ -73,7 +73,7 @@ Replace the complete example order content, including legend assumptions, node d
 ```json
 [
   {"tab": "All", "note": "All parts, without highlighting newly added nodes."},
-  {"tab": "Part 1 · #92", "note": "Branch ...: what this layer adds."}
+  {"tab": "Part 1 · #101", "note": "Branch ...: what this layer adds."}
 ]
 ```
 

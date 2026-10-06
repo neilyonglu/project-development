@@ -1,15 +1,15 @@
 # Pre-implementation Issue Analysis
 
-Read the complete available requirements and compare real code before producing the five-part analysis. Store results at the location specified by [project context](project-context.md); Forge uses `doc/dev/`. Project paths are relative to the current repository, not this skill.
+Read the complete available requirements and compare real code before producing the five-part analysis. Store results at the location specified by [project context](project-context.md); a sample project may use `docs/development/`. Project paths are relative to the current repository, not this skill.
 
 Follow applicable project rules and user instructions. Use the selected output language for analysis prose and diagram explanations; preserve identifiers and source quotations.
 
 ## Work document unit
 
-- Units and locations follow project context. Forge uses one document per issue, typically `doc/dev/issue-<IID>-analysis.md`, with issue number/title, project, issue URL, analysis date, branch, HEAD and comparison base.
-- Where one-document-per-issue applies, reference related issues/dependencies without merging analyses. For example #92, #115 and #116 keep distinct documents and responsibility boundaries.
+- Units and locations follow project context. For an issue-based sample project, use one document per issue, for example `docs/development/issue-<ID>-analysis.md`, with issue number/title, project, issue URL, analysis date, branch, HEAD and comparison base.
+- Where one-document-per-issue applies, reference related issues/dependencies without merging analyses. For example #101, #102 and #103 keep distinct documents and responsibility boundaries.
 - Update requirements revisions, decisions, implementation and verification in the same document; retain significant decision dates and sources, not duplicate reports.
-- Reuse an existing document/name, such as `issue-92-intake-review.md`, adapting its format as needed. Without an issue use the project's chosen work title/source, not a fabricated number.
+- Reuse an existing document/name, such as `issue-101-analysis.md`, adapting its format as needed. Without an issue use the project's chosen work title/source, not a fabricated number.
 - Retain the five parts below; explain non-applicability and mark missing information unresolved.
 
 ## Five-part analysis
@@ -48,7 +48,7 @@ Trace the nearest existing feature across layers:
 - Separate implemented from pending. Branch code is not acceptance; identify remaining checks for existing work.
 - Link part 5 when choices depend on open requirements and explain how answers change the plan. Unapproved proposals are not mandatory work.
 
-Check relevant UI, API/Domo, service, DB, routes, menus, metadata, schema, config, schedulers, fixtures and deployment companions. Unchecked areas cannot be declared unaffected. Explain executable changes and dependency order after the table.
+Check relevant UI, API/domain handler, service, DB, routes, menus, metadata, schema, config, schedulers, fixtures and deployment companions. Unchecked areas cannot be declared unaffected. Explain executable changes and dependency order after the table.
 
 ### 3. Explain significant algorithms
 
