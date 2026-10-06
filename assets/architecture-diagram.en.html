@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#ISSUE Architecture</title>
+<style>
+  :root { --bg:#ffffff; --fg:#0f172a; --muted:#64748b; --card:#ffffff; --line:#e2e8f0; --pill:#eef2ff; --pill-fg:#3730a3; --amber-bg:#fef3c7; --amber-fg:#92400e; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --fg:#e2e8f0; --muted:#94a3b8; --card:#111a2e; --line:#1e293b; --pill:#1e2a4a; --pill-fg:#c7d2fe; --amber-bg:#3a2a0a; --amber-fg:#fcd34d; } }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font-family:system-ui,"Microsoft JhengHei",sans-serif; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  p { margin:0 0 16px; color:var(--muted); font-size:13px; }
+  #diagram { overflow:auto; max-height:calc(100vh - 120px); border:1px solid var(--muted); border-radius:6px; }
+  #diagram svg { display:block; max-width:none !important; }
+  .bar { display:flex; gap:12px; align-items:center; margin-bottom:8px; font-size:13px; }
+  .bar button { min-width:32px; padding:2px 8px; cursor:pointer; }
+  label { cursor:pointer; user-select:none; }
+  .tabs { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px; }
+  .tabs button { padding:6px 12px; font-size:13px; cursor:pointer; border:1px solid var(--muted); border-radius:6px 6px 0 0; background:transparent; color:var(--fg); }
+  .tabs button[aria-selected="true"] { background:#1d4ed8; border-color:#1d4ed8; color:#fff; }
+  #tip { position:fixed; z-index:10; max-width:420px; padding:8px 10px; border-radius:6px; font-size:12px; line-height:1.5;
+         background:var(--fg); color:var(--bg); box-shadow:0 4px 16px rgba(0,0,0,.25); pointer-events:none; white-space:pre-line; display:none; }
+  #tip b { display:block; margin-bottom:2px; }
+  #tip i { display:block; font-style:normal; color:#fbbf24; margin-bottom:4px; }
+  #diagram g.node { cursor:help; }
+  #overlay { position:fixed; top:0; right:0; bottom:0; z-index:20; display:none; width:min(460px, 100vw); padding:12px; box-sizing:border-box; }
+  #overlay.open { display:block; }
+  #panel { position:relative; height:100%; overflow:auto; box-sizing:border-box; padding:20px 22px 18px;
+           border-radius:14px; background:var(--card); color:var(--fg); border:1px solid var(--line);
+           box-shadow:0 24px 60px rgba(15,23,42,.30), 0 2px 8px rgba(15,23,42,.12); animation:slide .16s ease-out; }
+  @keyframes slide { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:none; } }
+  /* The open drawer takes its width from the page, so it covers none of the diagram. */
+  @media (min-width:900px) { body.drawer-open { padding-right:476px; } }
+  #diagram g.node.picked :is(rect, polygon, path, circle, ellipse) { stroke:#dc2626 !important; stroke-width:4px !important; }
+  #diagram path.hot { stroke:#dc2626 !important; stroke-width:3.5px !important; }
+  #diagram .edgeLabel.hot, #diagram .edgeLabel.hot * { color:#dc2626 !important; fill:#dc2626 !important; font-weight:700 !important; }
+  #panel .kind { font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+  #panel h2 { font-size:18px; margin:0 36px 8px 0; word-break:break-all; }
+  #panel .meaning { margin:0 0 14px; padding:8px 10px; border-radius:8px; font-size:13px; line-height:1.5;
+                    background:var(--amber-bg); color:var(--amber-fg); }
+  #panel ul { list-style:none; margin:0; padding:0; }
+  #panel li { display:grid; grid-template-columns:minmax(0, max-content) 1fr; gap:4px 12px; align-items:baseline;
+              padding:8px 0; border-top:1px solid var(--line); font-size:13px; line-height:1.5; }
+  #panel li:first-child { border-top:0; }
+  #panel code { font-family:ui-monospace,Consolas,monospace; font-size:12px; padding:2px 8px; border-radius:999px;
+                background:var(--pill); color:var(--pill-fg); white-space:normal; word-break:break-all; max-width:220px; }
+  #panel .close { position:absolute; top:12px; right:12px; width:30px; height:30px; border-radius:50%; border:0; cursor:pointer;
+                  background:var(--pill); color:var(--fg); font-size:15px; line-height:30px; }
+  #panel .close:hover { filter:brightness(.95); }
+  #panel .empty { font-size:13px; color:var(--muted); margin:0; }
+  #panel .files { display:flex; flex-wrap:wrap; gap:4px; margin:0 0 14px; }
+  #panel .files code { max-width:none; background:transparent; border:1px solid var(--line); color:var(--muted); }
+  #panel .hint { margin:14px 0 0; font-size:11px; color:var(--muted); text-align:right; }
+  @media (max-width:520px) { #panel li { grid-template-columns:1fr; } #panel code { max-width:none; } }
+  .legend { margin:0 0 12px; border:1px solid var(--line); border-radius:8px; background:var(--card); font-size:13px; }
+  .legend summary { padding:8px 12px; cursor:pointer; font-weight:600; user-select:none; }
+  .legend[open] summary { border-bottom:1px solid var(--line); }
+  .legend-body { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px 24px; padding:12px; }
+  .legend h3 { margin:0 0 6px; font-size:13px; }
+  .legend p { margin:0; color:var(--fg); line-height:1.6; }
+  .legend .keys { list-style:none; margin:0; padding:0; }
+  .legend .keys li { display:flex; align-items:center; gap:8px; padding:3px 0; line-height:1.5; }
+  .legend .keys.plain li::before { content:"•"; color:var(--muted); }
+  .legend .sw { flex:none; width:26px; height:16px; border:1.5px solid; border-radius:2px; box-sizing:border-box; }
+  .legend .sw.para { transform:skewX(-18deg); }
+  .legend .sw.cyl { border-radius:50% / 30%; }
+  .legend .ln { flex:none; width:26px; border-top:2px solid var(--muted); }
+  .legend .ln.thick { border-top-width:4px; }
+  .legend .ln.dot { border-top-style:dotted; }
+  .legend .num { flex:none; width:26px; font-size:11px; color:var(--muted); }
+  .legend .unlisted code { margin-right:8px; font-family:ui-monospace,Consolas,monospace; font-size:12px; }
+</style>
+</head>
+<body>
+<h1>#ISSUE Architecture</h1>
+<details class="legend">
+  <summary>How to read this diagram</summary>
+  <div class="legend-body">
+    <section>
+      <h3>Overview</h3>
+      <p>Requests flow through the project layers and results return to the caller. Part tabs follow branches in merge order; Part N shows layers up to N. Replace this example legend with the actual project architecture.</p>
+    </section>
+    <section>
+      <h3>Node types</h3>
+      <ul class="keys">
+        <li><span class="sw" style="background:#dbeafe;border-color:#1d4ed8"></span>Code file, read</li>
+        <li><span class="sw" style="background:#f8fafc;border-color:#94a3b8;border-style:dashed"></span>Code file, unread</li>
+        <li><span class="sw" style="background:#dcfce7;border-color:#15803d;border-radius:8px"></span>Test file; hide with Show tests</li>
+        <li><span class="sw para" style="background:#fef3c7;border-color:#b45309"></span>Data or configuration file without active behavior; dashed = unread</li>
+        <li><span class="sw cyl" style="background:#dbeafe;border-color:#1d4ed8"></span>Database table</li>
+        <li><span class="sw" style="background:#f1f5f9;border-color:#64748b;border-width:2px"></span>External service, such as an LLM</li>
+        <li><span class="sw" style="background:transparent;border-color:#7c3aed;border-width:3px"></span>Purple border: added in this Part</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Edge types</h3>
+      <ul class="keys">
+        <li><span class="ln"></span>Call, read or write; labels show input → output</li>
+        <li><span class="ln thick"></span>Cross-layer call, such as a backend calling a service</li>
+        <li><span class="ln dot"></span>Returned result</li>
+        <li><span class="num">①②③</span>Sequential steps from one origin, completed in order</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Controls</h3>
+      <ul class="keys plain">
+        <li>Hover a node to see its purpose</li>
+        <li>Click a node to open its file and function details; connected edges turn red</li>
+        <li>Ctrl + mouse wheel: zoom around the pointer</li>
+        <li>Press F5 after editing the file</li>
+      </ul>
+    </section>
+  </div>
+</details>
+<details class="legend">
+  <summary>Files omitted from the diagram</summary>
+  <div class="legend-body">
+    <ul class="keys plain unlisted">
+      <li data-file="web/src/orders/index.ts"><code>web/src/orders/index.ts</code>Re-exports OrderForm; no data flow</li>
+    </ul>
+  </div>
+</details>
+<div class="tabs" id="tabs"></div>
+<p id="partNote"></p>
+<div class="bar">
+  <label><input type="checkbox" id="showTests" checked> Show tests</label>
+  <span>Zoom: </span>
+  <button id="zoomOut" title="Zoom out">−</button>
+  <span id="zoomLevel">100%</span>
+  <button id="zoomIn" title="Zoom in">＋</button>
+  <button id="zoomReset" title="Reset to 100%">Reset</button>
+  <span>(Ctrl + mouse wheel also works)</span>
+</div>
+<div id="diagram"></div>
+<div id="tip" role="tooltip"></div>
+<div id="overlay"><aside id="panel" role="dialog" aria-modal="true" aria-label="Function details"></aside></div>
+
+<!-- Diagram source. Test IDs start with t_; hiding tests removes lines containing those IDs.
+     Prefix node / subgraph / end lines with "N|", the first Part where they appear; Part N includes up to N.
+     Do not prefix edge or class lines; draw an edge only if both nodes are visible. -->
+<script type="text/plain" id="src">
+flowchart TD
+    classDef seen fill:#dbeafe,stroke:#1d4ed8,color:#0f172a
+    classDef todo fill:#f8fafc,stroke:#94a3b8,stroke-dasharray:4 3,color:#475569
+    classDef test fill:#dcfce7,stroke:#15803d,color:#0f172a
+    classDef fresh stroke:#7c3aed,stroke-width:3.5px
+    classDef data fill:#fef3c7,stroke:#b45309,color:#0f172a
+    classDef datatodo fill:#fffbeb,stroke:#b45309,stroke-dasharray:4 3,color:#78350f
+    classDef ext fill:#f1f5f9,stroke:#64748b,stroke-width:2px,color:#0f172a
+
+    %% ── L1 Frontend ──
+1|    subgraph WEB[L1 Frontend · web]
+        direction TB
+1|        subgraph W_PAGE[Pages]
+1|            f_order[OrderForm.tsx]
+1|        end
+1|        subgraph W_DEF[Definitions: data only]
+1|            types[/OrderTypes.ts/]
+1|        end
+1|    end
+
+    %% ── L2 Backend ──
+1|    subgraph API[L2 Backend · api]
+        direction TB
+1|        subgraph API_SVC[order_service.py: endpoint flows]
+1|            ep_create["POST /orders"]
+2|            ep_list["GET /orders"]
+1|        end
+1|        repo[order_repo.py]
+2|        notifier[notifier.py]
+2|        mail[External Mail API]
+1|    end
+
+    %% ── L3 Database ──
+1|    subgraph DB[L3 Database]
+1|        db_orders[(orders)]
+1|    end
+
+    %% Frontend → Backend: label = input → output
+    f_order == ① Create: items · qty → orderId ==> ep_create
+    f_order == ② List: status → orders ==> ep_list
+    f_order -. Read OrderStatus .-> types
+
+    %% Backend
+    ep_create -- ① items → order --> repo
+    ep_create -- ② orderId · email --> notifier
+    ep_list -- status → orders --> repo
+    repo -- INSERT / SELECT --> db_orders
+    repo -. new orderId .-> ep_create
+    notifier == recipient · content ==> mail
+
+    %% Tests: IDs start with t_
+1|    t_repo([test_order_repo.py])
+    t_repo -. tests .-> repo
+
+    class f_order,ep_create,ep_list,repo,db_orders seen
+    class notifier todo
+    class types data
+    class mail ext
+    class t_repo test
+</script>
+
+<!-- Node details: key = node ID; meaning = business purpose; detail = technical hover notes; funcs = [name, explanation]; styles = associated scss files. -->
+<script type="application/json" id="details">
+{
+ "f_order": {
+  "meaning": "Order page: users submit items and view their orders",
+  "detail": "Submit → POST /orders\nList → GET /orders?status=",
+  "funcs": [
+   [
+    "OrderForm",
+    "Page containing the order form and list"
+   ],
+   [
+    "submit",
+    "Submit items and qty to create an order"
+   ]
+  ],
+  "styles": [
+   "OrderForm.module.scss：Form and list layout"
+  ],
+  "files": [
+   "web/src/orders/OrderForm.tsx",
+   "web/src/orders/OrderForm.module.scss"
+  ]
+ },
+ "types": {
+  "meaning": "Shared order types and statuses used by frontend and backend",
+  "detail": "OrderStatus：pending · paid · cancelled",
+  "files": [
+   "web/src/orders/OrderTypes.ts"
+  ]
+ },
+ "ep_create": {
+  "meaning": "Create-order entrypoint: save the order, then send confirmation",
+  "detail": "① repo.insert ② notifier.send",
+  "files": [
+   "api/order_service.py"
+  ]
+ },
+ "ep_list": {
+  "meaning": "List-order entrypoint: filter by status",
+  "detail": "repo.find_by_status",
+  "files": [
+   "api/order_service.py"
+  ]
+ },
+ "repo": {
+  "meaning": "Order repository: owns reads and writes to the orders table",
+  "detail": "insert → return new orderId\nfind_by_status → orders",
+  "funcs": [
+   [
+    "insert",
+    "Insert an order and return orderId"
+   ],
+   [
+    "find_by_status",
+    "Find orders by status"
+   ]
+  ],
+  "files": [
+   "api/order_repo.py"
+  ]
+ },
+ "notifier": {
+  "meaning": "Notifier: email the buyer after order creation",
+  "detail": "Failures are logged without affecting the order",
+  "funcs": [
+   [
+    "send",
+    "Build email content and send it through Mail API"
+   ]
+  ],
+  "files": [
+   "api/notifier.py"
+  ]
+ },
+ "mail": {
+  "meaning": "External email service",
+  "detail": "HTTPS; API key comes from environment variables"
+ },
+ "db_orders": {
+  "meaning": "Orders table: one row per order",
+  "detail": "orderid · status · items"
+ },
+ "t_repo": {
+  "meaning": "Verify order repository reads and writes",
+  "detail": "Uses the test DB",
+  "funcs": [
+   [
+    "test_insert_returns_id",
+    "An inserted order returns its new orderId"
+   ]
+  ],
+  "files": [
+   "api/tests/test_order_repo.py"
+  ]
+ }
+}
+</script>
+
+<script type="application/json" id="parts">
+[
+ {
+  "tab": "All",
+  "note": "All parts together, without highlighting newly added nodes."
+ },
+ {
+  "tab": "Part 1 · Create order",
+  "note": "Branch 1: order form, POST /orders and the orders table."
+ },
+ {
+  "tab": "Part 2 · Query and notify",
+  "note": "Branch 2: GET /orders and confirmation email; purple borders mark additions in this Part."
+ }
+]
+</script>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+  // ELK routes edges at right angles and keeps layers apart; without it, dagre with stepped edges.
+  let layout = "dagre";
+  try {
+    const { default: elkLayouts } = await import("https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0/dist/mermaid-layout-elk.esm.min.mjs");
+    mermaid.registerLayoutLoaders(elkLayouts);
+    layout = "elk";
+  } catch {}
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: dark ? "dark" : "default",
+    layout,
+    elk: { mergeEdges: false, nodePlacementStrategy: "NETWORK_SIMPLEX" },
+    flowchart: { curve: "step", nodeSpacing: 40, rankSpacing: 60 },
+  });
+
+  const source = document.getElementById("src").textContent;
+  const toggle = document.getElementById("showTests");
+  try { toggle.checked = localStorage.getItem("showTests") !== "0"; } catch {}
+
+  // Tab 0 is the whole diagram; tabs 1..4 are the branches in merge order, each on top of the ones before.
+  const PARTS = JSON.parse(document.getElementById("parts").textContent);
+  const LAST_PART = PARTS.length - 1;
+  const ARROW = /-->|==>|\.->|\.-|---/;
+
+  // Mermaid source for part `n` (0 = all): tagged lines up to n, then only edges and classes whose
+  // nodes are drawn. What part n adds is marked: a whole new block as one block, otherwise node by node.
+  function sourceForPart(n) {
+    const isAll = n === 0;
+    const upTo = isAll ? LAST_PART : n;
+    const isMarked = tagPart => !isAll && n > 1 && tagPart === n;
+    const lines = [];
+    const shown = new Set();
+    const added = [];
+    const addedBlocks = [];
+    const openBlocks = [];   // per open subgraph: is it, or a block around it, marked whole
+    for (const line of source.split("\n")) {
+      const tag = line.match(/^(\d+)\|(.*)$/);
+      if (!tag) { lines.push(line); continue; }
+      const tagPart = Number(tag[1]);
+      if (tagPart > upTo) continue;
+      const insideMarked = openBlocks.includes(true);
+      const block = tag[2].match(/^\s*subgraph (\w+)/);
+      const node = tag[2].match(/^\s*(\w+)\s*[\[\(\{"]/);
+      if (block) {
+        const isNewBlock = isMarked(tagPart) && !insideMarked;
+        if (isNewBlock) addedBlocks.push(block[1]);
+        openBlocks.push(isNewBlock);
+      } else if (tag[2].trim() === "end") {
+        openBlocks.pop();
+      } else if (node) {
+        shown.add(node[1]);
+        if (isMarked(tagPart) && !insideMarked && !node[1].startsWith("t_")) added.push(node[1]);
+      }
+      lines.push(tag[2]);
+    }
+    const kept = lines.flatMap(line => {
+      const words = line.trim().split(/\s+/);
+      if (/^\s*class\s/.test(line)) {
+        const ids = words[1].split(",").filter(id => shown.has(id));
+        return ids.length ? [`    class ${ids.join(",")} ${words[2]}`] : [];
+      }
+      const isNode = /^\s*\w+\s*[\[\(\{"]/.test(line);
+      if (!isNode && ARROW.test(line) && !/^\s*(classDef|%%)/.test(line)) {
+        return shown.has(words[0]) && shown.has(words[words.length - 1]) ? [line] : [];
+      }
+      return [line];
+    });
+    if (added.length) kept.push(`    class ${added.join(",")} fresh`);
+    for (const id of addedBlocks) kept.push(`    style ${id} stroke:#7c3aed,stroke-width:3.5px`);
+    return kept.join("\n");
+  }
+
+  let part = 0;
+  try { part = Math.min(LAST_PART, Number(localStorage.getItem("part")) || 0); } catch {}
+  const tabs = document.getElementById("tabs");
+  PARTS.forEach((p, i) => {
+    const button = document.createElement("button");
+    button.textContent = p.tab;
+    button.setAttribute("role", "tab");
+    button.onclick = () => {
+      part = i;
+      try { localStorage.setItem("part", String(part)); } catch {}
+      draw();
+    };
+    tabs.appendChild(button);
+  });
+
+  async function draw() {
+    [...tabs.children].forEach((b, i) => b.setAttribute("aria-selected", String(i === part)));
+    document.getElementById("partNote").textContent = PARTS[part].note;
+    const partSource = sourceForPart(part);
+    const text = toggle.checked
+      ? partSource
+      : partSource.split("\n").filter(line => !/\bt_\w+/.test(line)).join("\n");
+    const { svg } = await mermaid.render("graph" + Date.now(), text);
+    diagram.innerHTML = svg;
+    renderedEdges = listEdges(text);
+    attachTips();
+    naturalWidth = diagram.querySelector("svg").viewBox.baseVal.width;
+    applyZoom();
+  }
+
+  const diagram = document.getElementById("diagram");
+
+  // The edges in the order Mermaid draws them, as [from, to], so a clicked box can find its own.
+  let renderedEdges = [];
+  function listEdges(text) {
+    return text.split("\n")
+      .filter(line => /-->|==>|\.->|\.-|---/.test(line) && !/^\s*(%%|class\b|classDef\b)/.test(line)
+        && !/^\s*\w+\s*[\[\(\{"]/.test(line))
+      .map(line => { const words = line.trim().split(/\s+/); return [words[0], words[words.length - 1]]; });
+  }
+  // Matched by Mermaid's edge id, L_<from>_<to>_<n>, not by drawing order: the layout reorders them.
+  function highlightEdges(id) {
+    const patterns = renderedEdges
+      .filter(([from, to]) => id !== null && (from === id || to === id))
+      .map(([from, to]) => new RegExp(`L[_-]${from}[_-]${to}[_-]\\d+$`));
+    diagram.querySelectorAll("[data-id], path[id]").forEach(element => {
+      const key = element.getAttribute("data-id") || element.id;
+      const isHot = patterns.some(pattern => pattern.test(key));
+      const target = element.tagName.toLowerCase() === "path" ? element : (element.closest(".edgeLabel") || element);
+      target.classList.toggle("hot", isHot);
+    });
+  }
+
+
+  // Hover (or tap) a box for what it is for; the box itself carries only its name.
+  const DETAILS = JSON.parse(document.getElementById("details").textContent);
+  const tip = document.getElementById("tip");
+  function showTip(node, event) {
+    const id = (node.id.match(/flowchart-(\w+?)-\d+$/) || [])[1];
+    if (!id || !DETAILS[id]) return;
+    tip.innerHTML = "";
+    const title = document.createElement("b");
+    title.textContent = node.textContent.trim();
+    const meaning = document.createElement("i");
+    meaning.textContent = DETAILS[id].meaning;
+    const styleText = (DETAILS[id].styles || []).map(line => "\nStyles: " + line).join("");
+    tip.append(title, meaning, DETAILS[id].detail + styleText);
+    tip.style.display = "block";
+    moveTip(event);
+  }
+  function moveTip(event) {
+    const x = Math.min(event.clientX + 14, window.innerWidth - tip.offsetWidth - 8);
+    const y = Math.min(event.clientY + 14, window.innerHeight - tip.offsetHeight - 8);
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+  }
+  // Click a box: a floating card with every function in the file, one plain line each.
+  const overlay = document.getElementById("overlay");
+  const panel = document.getElementById("panel");
+  function openPanel(node) {
+    const id = (node.id.match(/flowchart-(\w+?)-\d+$/) || [])[1];
+    const entry = id && DETAILS[id];
+    if (!entry) return;
+    panel.innerHTML = "";
+    const close = document.createElement("button");
+    close.className = "close"; close.textContent = "✕"; close.title = "Close (Esc)";
+    close.onclick = closePanel;
+    const kind = document.createElement("div");
+    kind.className = "kind";
+    kind.textContent = entry.funcs && entry.funcs.length ? `${entry.funcs.length} functions` : "No functions";
+    const title = document.createElement("h2");
+    title.textContent = node.textContent.trim();
+    const meaning = document.createElement("p");
+    meaning.className = "meaning"; meaning.textContent = entry.meaning;
+    panel.append(close, kind, title, meaning);
+    if (entry.files && entry.files.length) {
+      const fileList = document.createElement("div");
+      fileList.className = "files";
+      for (const path of entry.files) {
+        const code = document.createElement("code"); code.textContent = path;
+        fileList.append(code);
+      }
+      panel.append(fileList);
+    }
+    if (entry.funcs && entry.funcs.length) {
+      const list = document.createElement("ul");
+      for (const [name, line] of entry.funcs) {
+        const item = document.createElement("li");
+        const code = document.createElement("code"); code.textContent = name;
+        const desc = document.createElement("span"); desc.textContent = line;
+        item.append(code, desc);
+        list.append(item);
+      }
+      panel.append(list);
+    } else {
+      const empty = document.createElement("p");
+      empty.className = "empty";
+      empty.textContent = "This node has no listed functions. Hover to inspect its data, configuration, table, endpoint or test details.";
+      panel.append(empty);
+    }
+    if (entry.styles && entry.styles.length) {
+      const heading = document.createElement("div");
+      heading.className = "kind"; heading.style.marginTop = "16px"; heading.textContent = "Style files";
+      const styleList = document.createElement("ul");
+      for (const line of entry.styles) {
+        const [file, ...rest] = line.split("：");
+        const item = document.createElement("li");
+        const code = document.createElement("code"); code.textContent = file;
+        const desc = document.createElement("span"); desc.textContent = rest.join("：");
+        item.append(code, desc);
+        styleList.append(item);
+      }
+      panel.append(heading, styleList);
+    }
+    const hint = document.createElement("p");
+    hint.className = "hint"; hint.textContent = "Close with Esc, the close button or empty diagram space; red border = selected node, red edges = connected calls";
+    panel.append(hint);
+    overlay.classList.add("open");
+    document.body.classList.add("drawer-open");
+    highlightEdges(id);
+    pickNode(node);
+    // The page just narrowed; keep the box that was clicked in view.
+    requestAnimationFrame(() => node.scrollIntoView({ block: "nearest", inline: "nearest" }));
+    close.focus();
+  }
+  // Mermaid writes each box's colours inline with !important, so the red is written inline too.
+  const SHAPES = "rect, polygon, path, circle, ellipse";
+  function pickNode(node) {
+    diagram.querySelectorAll("g.node.picked").forEach(other => {
+      other.classList.remove("picked");
+      other.querySelectorAll(SHAPES).forEach(shape => {
+        if (shape.dataset.style !== undefined) shape.setAttribute("style", shape.dataset.style);
+        delete shape.dataset.style;
+      });
+    });
+    if (!node) return;
+    node.classList.add("picked");
+    node.querySelectorAll(SHAPES).forEach(shape => {
+      shape.dataset.style = shape.getAttribute("style") || "";
+      shape.style.setProperty("stroke", "#dc2626", "important");
+      shape.style.setProperty("stroke-width", "4px", "important");
+    });
+  }
+  function closePanel() { overlay.classList.remove("open"); document.body.classList.remove("drawer-open"); highlightEdges(null); pickNode(null); }
+  document.addEventListener("keydown", event => { if (event.key === "Escape") closePanel(); });
+  overlay.addEventListener("click", event => { if (event.target === overlay) closePanel(); });
+  diagram.addEventListener("click", closePanel);
+
+  function attachTips() {
+    diagram.querySelectorAll("g.node").forEach(node => {
+      node.addEventListener("mouseenter", event => showTip(node, event));
+      node.addEventListener("mousemove", moveTip);
+      node.addEventListener("mouseleave", () => { tip.style.display = "none"; });
+      node.addEventListener("click", event => { event.stopPropagation(); tip.style.display = "none"; openPanel(node); });
+    });
+  }
+  let naturalWidth = 0;
+  let zoom = 1;
+  try { zoom = Number(localStorage.getItem("zoom")) || 1; } catch {}
+
+  function applyZoom() {
+    const svgElement = diagram.querySelector("svg");
+    if (svgElement) svgElement.style.width = naturalWidth * zoom + "px";
+    document.getElementById("zoomLevel").textContent = Math.round(zoom * 100) + "%";
+    try { localStorage.setItem("zoom", String(zoom)); } catch {}
+  }
+  // Zoom keeping one point of the diagram still: the one under the cursor, or the view's centre.
+  function setZoom(next, anchorX, anchorY) {
+    const box = diagram.getBoundingClientRect();
+    const offsetX = anchorX === undefined ? diagram.clientWidth / 2 : anchorX - box.left;
+    const offsetY = anchorY === undefined ? diagram.clientHeight / 2 : anchorY - box.top;
+    const pointX = diagram.scrollLeft + offsetX;
+    const pointY = diagram.scrollTop + offsetY;
+    const previous = zoom;
+    zoom = Math.min(4, Math.max(0.25, next));
+    applyZoom();
+    const ratio = zoom / previous;
+    diagram.scrollLeft = pointX * ratio - offsetX;
+    diagram.scrollTop = pointY * ratio - offsetY;
+  }
+  document.getElementById("zoomIn").onclick = () => setZoom(zoom * 1.25);
+  document.getElementById("zoomOut").onclick = () => setZoom(zoom / 1.25);
+  document.getElementById("zoomReset").onclick = () => setZoom(1);
+  diagram.addEventListener("wheel", event => {
+    if (!event.ctrlKey) return;
+    event.preventDefault();
+    setZoom(zoom * (event.deltaY < 0 ? 1.1 : 1 / 1.1), event.clientX, event.clientY);
+  }, { passive: false });
+  toggle.addEventListener("change", () => {
+    try { localStorage.setItem("showTests", toggle.checked ? "1" : "0"); } catch {}
+    draw();
+  });
+  draw();
+</script>
+</body>
+</html>
