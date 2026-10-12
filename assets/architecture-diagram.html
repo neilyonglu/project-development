@@ -55,6 +55,11 @@
              background-color:var(--panel);
              background-image:linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
              background-size:32px 32px; background-position:-1px -1px; }
+  #diagram.no-grid { background-image:none; }
+  /* Dragging scrolls the diagram, so its scrollbars are hidden; the wheel still scrolls. */
+  #diagram { cursor:grab; scrollbar-width:none; }
+  #diagram::-webkit-scrollbar { display:none; }
+  #diagram.dragging, #diagram.dragging * { cursor:grabbing !important; user-select:none; }
   #diagram svg { display:block; max-width:none !important; }
   #diagram g.node rect { rx:8px; ry:8px; }
   #diagram g.cluster rect { rx:12px; ry:12px; }
@@ -233,6 +238,7 @@
 <p id="partNote"></p>
 <div class="bar">
   <label><input type="checkbox" id="showTests" checked> 顯示測試</label>
+  <label><input type="checkbox" id="showGrid" checked> 格線</label>
   <span>縮放：</span>
   <button id="zoomOut" title="縮小">−</button>
   <span id="zoomLevel">100%</span>
@@ -993,6 +999,41 @@ flowchart TD
     try { localStorage.setItem("showTests", toggle.checked ? "1" : "0"); } catch {}
     draw();
   });
+  // Drag the diagram to scroll it, like grabbing it by hand. A drag of a few pixels or more is never
+  // taken as a click, so letting go over a box does not open its card.
+  let drag = null;
+  let justDragged = false;
+  diagram.addEventListener("pointerdown", event => {
+    if (event.button !== 0) return;
+    justDragged = false;
+    drag = { x: event.clientX, y: event.clientY, left: diagram.scrollLeft, top: diagram.scrollTop, moved: false };
+  });
+  window.addEventListener("pointermove", event => {
+    if (!drag) return;
+    const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
+    if (!drag.moved && Math.hypot(dx, dy) < 4) return;
+    drag.moved = true;
+    diagram.classList.add("dragging");
+    tip.style.display = "none";
+    diagram.scrollLeft = drag.left - dx;
+    diagram.scrollTop = drag.top - dy;
+  });
+  window.addEventListener("pointerup", () => {
+    if (drag && drag.moved) { justDragged = true; diagram.classList.remove("dragging"); }
+    drag = null;
+  });
+  diagram.addEventListener("click", event => {
+    if (justDragged) { event.stopPropagation(); justDragged = false; }
+  }, true);
+  // Background grid on or off, remembered like the other view settings.
+  const grid = document.getElementById("showGrid");
+  try { grid.checked = localStorage.getItem("showGrid") !== "0"; } catch {}
+  const applyGrid = () => diagram.classList.toggle("no-grid", !grid.checked);
+  grid.addEventListener("change", () => {
+    try { localStorage.setItem("showGrid", grid.checked ? "1" : "0"); } catch {}
+    applyGrid();
+  });
+  applyGrid();
   draw();
 </script>
 </body>
