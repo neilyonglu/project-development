@@ -111,6 +111,31 @@
   #panel .files { display:flex; flex-wrap:wrap; gap:4px; margin:0 0 14px; }
   #panel .files code { max-width:none; background:transparent; border:1px solid var(--line); color:var(--muted); }
   #panel .hint { margin:14px 0 0; font-size:11px; color:var(--muted); text-align:right; }
+  #panel .colbar { display:flex; justify-content:space-between; align-items:center; gap:8px; margin:16px 0 4px; }
+  #panel .colbar .kind { margin:0; }
+  #panel .colbar label { font-size:11px; color:var(--muted); }
+  /* Column names stay on one line; the type and note wrap instead. */
+  #panel .cols li { grid-template-columns:max-content minmax(0, max-content) 1fr; }
+  #panel .cols li > code { white-space:nowrap; word-break:normal; max-width:none; }
+  #panel .cols .type { font-size:11px; color:var(--muted); }
+  #panel .cols .uses { grid-column:1 / -1; }
+  /* The arrow sits at the right end of the column's row, so a folded row takes no extra line. */
+  #panel .cols li.used { position:relative; padding-right:26px; cursor:pointer; }
+  #panel .cols li.used:hover { background:color-mix(in srgb, var(--r-frontend) 6%, transparent); }
+  #panel .cols .uses summary { position:absolute; top:6px; right:0; width:22px; height:22px; display:grid; place-items:center;
+                               cursor:pointer; list-style:none; border-radius:6px; color:var(--muted); font-size:13px; }
+  #panel .cols .uses summary:hover { background:var(--pill); color:var(--r-frontend); }
+  #panel .cols .uses summary::-webkit-details-marker { display:none; }
+  #panel .cols .uses summary::after { content:"▸"; }
+  #panel .cols .uses[open] summary::after { content:"▾"; }
+  #panel .cols .uses .use { display:flex; margin:4px 0 0 12px; }
+  #panel .cols li.unused { opacity:.45; }
+  #panel .cols li[hidden] { display:none; }   /* the grid display above would otherwise win over [hidden] */
+  #panel .cols li.used > code { background:color-mix(in srgb, var(--r-database) 22%, transparent); color:var(--r-database); font-weight:600; }
+  #panel .use { display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); }
+  #panel .mode { flex:none; font-size:10px; font-weight:700; line-height:1.4; padding:0 6px; border-radius:999px; border:1px solid currentColor; }
+  #panel .mode.r { color:var(--r-frontend); }
+  #panel .mode.w { color:var(--r-ext); }
   @media (max-width:520px) { body { padding:16px; } #panel li { grid-template-columns:1fr; } #panel code { max-width:none; } }
   .legend { margin:0 0 10px; border:1px solid var(--panel-border); border-radius:12px; background:var(--panel); font-size:12px; }
   .legend summary { padding:9px 14px; cursor:pointer; font-weight:600; user-select:none; }
@@ -334,6 +359,17 @@ flowchart TD
   ],
   "files": [
    "api/order_repo.py"
+  ],
+  "writes": [
+   "orders.orderid",
+   "orders.status",
+   "orders.items",
+   "orders.buyeremail"
+  ],
+  "reads": [
+   "2|orders.orderid",
+   "2|orders.status",
+   "2|orders.items"
   ]
  },
  "notifier": {
@@ -355,7 +391,39 @@ flowchart TD
  },
  "db_orders": {
   "meaning": "訂單表：一筆訂單一列",
-  "detail": "orderid · status · items"
+  "detail": "orderid · status · items",
+  "columns": [
+   [
+    "orderid",
+    "bigint",
+    "訂單 ID"
+   ],
+   [
+    "status",
+    "varchar",
+    "pending · paid · cancelled"
+   ],
+   [
+    "items",
+    "jsonb",
+    "品項與數量"
+   ],
+   [
+    "buyeremail",
+    "varchar",
+    "買家信箱"
+   ],
+   [
+    "createdtm",
+    "timestamp",
+    "建立時間，DB 預設 now()"
+   ],
+   [
+    "note",
+    "text",
+    "客服備註"
+   ]
+  ]
  },
  "t_repo": {
   "meaning": "檢查訂單倉庫的讀寫",
@@ -602,6 +670,7 @@ flowchart TD
       }
       return [line];
     });
+    drawnNodes = shown;
     if (added.length) kept.push(`    class ${added.join(",")} fresh`);
     for (const id of addedBlocks) kept.push(`    style ${id} stroke:${tok("--k-fresh")},stroke-width:3px`);
     return kept.join("\n");
@@ -666,6 +735,97 @@ flowchart TD
 
   // Hover (or tap) a box for what it is for; the box itself carries only its name.
   const DETAILS = JSON.parse(document.getElementById("details").textContent);
+  // DB columns. A table node (id[(name)]) lists "columns"; code nodes list "reads" / "writes" as
+  // "table.column", or "N|table.column" for a use that Part N added. Only drawn nodes count.
+  const TABLES = {};
+  for (const match of source.matchAll(/^\s*(?:\d+\|)?\s*(\w+)\s*\[\((.+?)\)\]/gm)) TABLES[match[1]] = match[2].trim();
+  let drawnNodes = new Set();
+  function columnUses() {
+    const uses = [];
+    for (const [id, entry] of Object.entries(DETAILS)) {
+      if (!drawnNodes.has(id) || (!toggle.checked && id.startsWith("t_"))) continue;
+      for (const [mode, key] of [["R", "reads"], ["W", "writes"]]) {
+        for (const raw of entry[key] || []) {
+          const use = raw.match(/^(?:(\d+)\|)?([^.|]+)\.(.+)$/);
+          if (use && !(part > 0 && use[1] && Number(use[1]) > part)) uses.push({ id, mode, table: use[2], column: use[3] });
+        }
+      }
+    }
+    return uses;
+  }
+  const nameOf = id => ([...diagram.querySelectorAll("g.node")]
+    .find(node => (node.id.match(/flowchart-(\w+?)-\d+$/) || [])[1] === id)?.textContent.trim()) || id;
+  function modeChip(mode) {
+    const chip = document.createElement("span");
+    chip.className = "mode " + mode.toLowerCase(); chip.textContent = mode;
+    return chip;
+  }
+  function columnsSection(id, entry) {
+    const section = document.createDocumentFragment();
+    const uses = columnUses();
+    if (entry.columns && entry.columns.length) {
+      const mine = uses.filter(use => use.table === TABLES[id]);
+      const used = new Set(mine.map(use => use.column)).size;
+      const bar = document.createElement("div");
+      bar.className = "colbar";
+      const heading = document.createElement("div");
+      heading.className = "kind"; heading.textContent = `${used} / ${entry.columns.length} 個欄位有用到`;
+      const label = document.createElement("label");
+      const only = document.createElement("input");
+      only.type = "checkbox";
+      try { only.checked = localStorage.getItem("onlyUsedColumns") === "1"; } catch {}
+      label.append(only, " 只看有用到的");
+      bar.append(heading, label);
+      const list = document.createElement("ul");
+      list.className = "cols";
+      for (const [name, type = "", note = ""] of entry.columns) {
+        const users = mine.filter(use => use.column === name);
+        const item = document.createElement("li");
+        item.className = users.length ? "used" : "unused";
+        const code = document.createElement("code"); code.textContent = name;
+        const typeText = document.createElement("span"); typeText.className = "type"; typeText.textContent = type;
+        const noteText = document.createElement("span"); noteText.textContent = note;
+        item.append(code, typeText, noteText);
+        if (users.length) {
+          // Folded behind a small arrow; opening it lists who reads and who writes, one per line.
+          const who = document.createElement("details");
+          who.className = "uses";
+          who.append(document.createElement("summary"));
+          for (const use of users) {
+            const tag = document.createElement("span");
+            tag.className = "use"; tag.append(modeChip(use.mode), nameOf(use.id));
+            who.append(tag);
+          }
+          item.append(who);
+          // Clicking anywhere on the row opens or closes it; the arrow and the open list handle their own clicks.
+          item.addEventListener("click", event => { if (!event.target.closest("details.uses")) who.open = !who.open; });
+        }
+        list.append(item);
+      }
+      const filter = () => list.querySelectorAll("li.unused").forEach(item => { item.hidden = only.checked; });
+      only.onchange = () => { try { localStorage.setItem("onlyUsedColumns", only.checked ? "1" : "0"); } catch {} filter(); };
+      filter();
+      section.append(bar, list);
+    }
+    const own = uses.filter(use => use.id === id);
+    if (own.length) {
+      const heading = document.createElement("div");
+      heading.className = "kind"; heading.style.marginTop = "16px"; heading.textContent = "用到的欄位";
+      const list = document.createElement("ul");
+      const modes = new Map();   // one line per column, with R and/or W
+      for (const use of own) modes.set(`${use.table}.${use.column}`, (modes.get(`${use.table}.${use.column}`) || new Set()).add(use.mode));
+      for (const [column, set] of modes) {
+        const item = document.createElement("li");
+        const code = document.createElement("code"); code.textContent = column;
+        const mode = document.createElement("span"); mode.className = "use";
+        ["R", "W"].filter(m => set.has(m)).forEach(m => mode.append(modeChip(m)));
+        item.append(code, mode);
+        list.append(item);
+      }
+      section.append(heading, list);
+    }
+    return section;
+  }
   const tip = document.getElementById("tip");
   function showTip(node, event) {
     const id = (node.id.match(/flowchart-(\w+?)-\d+$/) || [])[1];
@@ -699,7 +859,7 @@ flowchart TD
     close.onclick = closePanel;
     const kind = document.createElement("div");
     kind.className = "kind";
-    kind.textContent = entry.funcs && entry.funcs.length ? `${entry.funcs.length} 個函式` : "沒有函式";
+    kind.textContent = entry.funcs && entry.funcs.length ? `${entry.funcs.length} 個函式` : entry.columns ? "資料表" : "沒有函式";
     const title = document.createElement("h2");
     title.textContent = node.textContent.trim();
     const meaning = document.createElement("p");
@@ -724,7 +884,7 @@ flowchart TD
         list.append(item);
       }
       panel.append(list);
-    } else {
+    } else if (!entry.columns) {
       const empty = document.createElement("p");
       empty.className = "empty";
       empty.textContent = "這是資料、設定、DB table、endpoint 或測試，沒有函式。hover 可以看它的內容。";
@@ -744,6 +904,7 @@ flowchart TD
       }
       panel.append(heading, styleList);
     }
+    panel.append(columnsSection(id, entry));
     const hint = document.createElement("p");
     hint.className = "hint"; hint.textContent = "Esc、✕ 或點圖上空白處關閉；紅框 = 選到的方框，紅線 = 連到它的箭頭";
     panel.append(hint);

@@ -99,6 +99,18 @@ class WorkflowChecks(unittest.TestCase):
             self.assertTrue(any('nowhere' in p for p in problems), problems)
             self.assertTrue(any('-. text -->' in p for p in problems), problems)
 
+    def test_column_uses_must_name_listed_columns(self):
+        src = '1|    db_orders[(orders)]\n1|    repo[order_repo.py]\n'
+        details = {'db_orders': {'columns': [['orderid', 'bigint', ''], ['status', 'varchar', '']]},
+                   'repo': {'reads': ['2|orders.status'], 'writes': ['orders.orderid']}}
+        self.assertEqual(workflow.check_columns(src, details, 3), [])
+        details['repo']['reads'] = ['orders.statuz', 'items.qty', '9|orders.status', 'status']
+        problems = workflow.check_columns(src, details, 3)
+        self.assertEqual(len(problems), 4, problems)
+        self.assertTrue(any('statuz' in p and 'not a listed column' in p for p in problems), problems)
+        self.assertTrue(any('items.qty' in p and 'no table node' in p for p in problems), problems)
+        self.assertTrue(any('Part tab 9' in p for p in problems), problems)
+
 
 if __name__ == '__main__':
     unittest.main()

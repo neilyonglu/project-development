@@ -35,7 +35,7 @@ Checks inventory declarations, including old rename paths, and reports gaps/dupl
 python "<skill-dir>/scripts/workflow_check.py" diagram --html <architecture.html>
 ```
 
-Checks `src`/`details`/`parts`, exactly one valid class per node, details with `meaning`, test/t_ consistency, declared edge endpoints, valid Part tabs, dotted-edge syntax and path existence against `--repo` (current directory by default). `todo` lists unread nodes. It does not establish actual calls or render the page. Both language templates use this same schema/checker.
+Checks `src`/`details`/`parts`, exactly one valid class per node, details with `meaning`, test/t_ consistency, declared edge endpoints, valid Part tabs, dotted-edge syntax, `reads`/`writes` naming a listed column of a table node, and path existence against `--repo` (current directory by default). `todo` lists unread nodes. It does not establish actual calls or render the page. Both language templates use this same schema/checker.
 
 ## 4. Local skill links
 

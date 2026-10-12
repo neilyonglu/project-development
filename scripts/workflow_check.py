@@ -127,6 +127,35 @@ NODE_LINE = re.compile(r'^\s*(\w+)\s*[\[\(\{]')
 ARROW = re.compile(r'-->|==>|\.->|\.-|---')
 
 
+TABLE_LINE = re.compile(r'^\s*(?:\d+\|)?\s*(\w+)\s*\[\((.+?)\)\]', re.M)
+COLUMN_USE = re.compile(r'^(?:(\d+)\|)?([^.|]+)\.(.+)$')
+
+
+def check_columns(src: str, details: dict, part_count: int) -> list[str]:
+    """Table nodes list "columns"; "reads"/"writes" must name a listed column of a drawn table."""
+    problems: list[str] = []
+    columns: dict[str, set[str]] = {}
+    for node, table in TABLE_LINE.findall(src):
+        listed = details.get(node, {}).get('columns', [])
+        if not all(isinstance(c, list) and c and all(isinstance(v, str) for v in c) for c in listed):
+            problems.append(f'node {node}: "columns" must be [name, type, note] lists')
+            continue
+        columns[table.strip()] = {c[0] for c in listed}
+    for node, entry in details.items():
+        for key in ('reads', 'writes'):
+            for raw in entry.get(key, []):
+                use = COLUMN_USE.match(raw)
+                if not use:
+                    problems.append(f'node {node}: {key} "{raw}" is not "table.column" or "N|table.column"')
+                elif use.group(1) and not 1 <= int(use.group(1)) < max(part_count, 2):
+                    problems.append(f'node {node}: {key} "{raw}" has no Part tab {use.group(1)}')
+                elif use.group(2) not in columns:
+                    problems.append(f'node {node}: {key} "{raw}" names no table node with "columns"')
+                elif use.group(3) not in columns[use.group(2)]:
+                    problems.append(f'node {node}: {key} "{raw}" is not a listed column of {use.group(2)}')
+    return problems
+
+
 def check_diagram(html: Path, repo: Path) -> dict:
     """Structure of an architecture page built from the skill's template."""
     page = read_page(html)
@@ -183,6 +212,7 @@ def check_diagram(html: Path, repo: Path) -> dict:
         for path in entry.get('files', []):
             if not (repo / path).exists():
                 problems.append(f'node {node}: file {path} does not exist')
+    problems += check_columns(page.blocks['src'], details, len(parts))
     problems += [f'details {key}: no node with that id' for key in sorted(set(details) - node_set)]
     problems += [f'class line names unknown node {key}' for key in sorted(set(classes) - node_set)]
     problems += [f'edge {a} -> {b}: unknown node' for a, b in edges if a not in node_set or b not in node_set]

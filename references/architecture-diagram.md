@@ -67,6 +67,7 @@ Replace the complete example order content, including legend assumptions, node d
 - For new code files list each function; for files already in the comparison baseline list functions changed here. For tests explain each test. Data/DB/endpoint nodes may omit funcs.
 - `files` uses repository-relative paths; multiple boxes may reference one file. Include styles, `__init__.py` and other companions under the owner. Coverage reads these and `data-file`.
 - Existing DB tables/external services without repository files may omit files.
+- DB tables may list `"columns": [["status", "varchar", "pending · paid · cancelled"]]` as name, type, note, all columns from the real schema (for example `information_schema.columns`), not only the used ones. Code nodes then list `"reads"` and `"writes"` as `"table.column"`, where `table` is the table node's label; prefix `N|` (`"2|orders.status"`) when Part N added that use to a node drawn earlier. Columns appear only in the click card, never on the diagram: a table card lists every column with the used ones highlighted and who reads (R) or writes (W) them under the current Part tab; a code card lists the columns it uses.
 - `meaning`, `detail`, function explanations and style descriptions follow the output language. Preserve the full-width `：` style separator expected by the template; schema keys and identifiers stay unchanged.
 
 ## parts
