@@ -24,6 +24,7 @@
     --r-database-fill:#4c1d9566; --r-database:#a78bfa;
     --r-ext-fill:#78350f4d;      --r-ext:#fbbf24;
     --r-test-fill:#1e293b80;     --r-test:#94a3b8;
+    --r-planned-fill:#1e293b33;  --r-planned:#475569; --r-planned-text:#64748b;
     --r-todo-text:#94a3b8; --label-bg:#091024; --edge-main:#34d399;
     --k-fresh:#e879f9; --k-hot:#fb7185;
   }
@@ -40,6 +41,7 @@
     --r-database-fill:#a78bfa33; --r-database:#7c3aed;
     --r-ext-fill:#fbbf242e;      --r-ext:#d97706;
     --r-test-fill:#94a3b82e;     --r-test:#64748b;
+    --r-planned-fill:#f1f5f980;  --r-planned:#cbd5e1; --r-planned-text:#94a3b8;
     --r-todo-text:#64748b; --label-bg:#ffffff; --edge-main:#059669;
     --k-fresh:#c026d3; --k-hot:#e11d48;
   }
@@ -162,6 +164,7 @@
   .legend .sw.r-database { background:var(--r-database-fill); border-color:var(--r-database); }
   .legend .sw.r-ext      { background:var(--r-ext-fill);      border-color:var(--r-ext); border-width:2px; }
   .legend .sw.r-test     { background:var(--r-test-fill);     border-color:var(--r-test); border-radius:8px; }
+  .legend .sw.planned    { background:var(--r-planned-fill);  border-color:var(--r-planned); border-style:dotted; }
   .legend .sw.dash { border-style:dashed; background:transparent; border-color:var(--muted); }
   .legend .sw.solid { background:transparent; border-color:var(--muted); }
   .legend .ln.main { border-top-color:var(--edge-main); border-top-width:3px; }
@@ -196,6 +199,7 @@
         <li><span class="sw r-test"></span>測試檔，可用「顯示測試」隱藏</li>
         <li><span class="sw solid"></span>實線框：這個檔案已經看過</li>
         <li><span class="sw dash"></span>虛線框：還沒看</li>
+        <li><span class="sw planned"></span>灰色淡框：這個檔案還不存在，是規劃中的</li>
         <li><span class="sw r-frontend para"></span>平行四邊形：只放資料或設定、本身不做事的檔案</li>
         <li><span class="sw fresh"></span>洋紅粗框：這個 Part 新加的</li>
       </ul>
@@ -265,6 +269,7 @@ flowchart TD
     classDef data fill:#fef3c7,stroke:#b45309,color:#0f172a
     classDef datatodo fill:#fffbeb,stroke:#b45309,stroke-dasharray:4 3,color:#78350f
     classDef ext fill:#f1f5f9,stroke:#64748b,stroke-width:2px,color:#0f172a
+    classDef planned fill:#f8fafc,stroke:#cbd5e1,stroke-dasharray:2 4,color:#94a3b8
 
     %% ── L1 Frontend ──
 1|    subgraph WEB[L1 Frontend · web]
@@ -564,14 +569,17 @@ flowchart TD
       const c = classes[n.id] || new Set();
       const role = roleOf(n);
       const isTodo = c.has("todo") || c.has("datatodo");
+      const isPlanned = c.has("planned");   // the file does not exist yet: faded grey, whatever its layer
       const isFresh = c.has("fresh");
+      const colour = isPlanned ? "planned" : role;
       const parts = [
-        `fill:${tok(`--r-${role}-fill`)}`,
-        `stroke:${isFresh ? tok("--k-fresh") : tok(`--r-${role}`)}`,
+        `fill:${tok(`--r-${colour}-fill`)}`,
+        `stroke:${isFresh ? tok("--k-fresh") : tok(`--r-${colour}`)}`,
         `stroke-width:${isFresh ? 3 : role === "ext" ? 2 : 1.5}px`,
-        `color:${isTodo ? tok("--r-todo-text") : tok("--fg")}`,
+        `color:${isPlanned ? tok("--r-planned-text") : isTodo ? tok("--r-todo-text") : tok("--fg")}`,
       ];
-      if (isTodo) parts.push("stroke-dasharray:5 4");
+      if (isPlanned) parts.push("stroke-dasharray:2 4");
+      else if (isTodo) parts.push("stroke-dasharray:5 4");
       out.push(`    style ${n.id} ${parts.join(",")}`);
     }
     // Top-level layers: a dashed boundary in the layer's colour, as archify draws regions.

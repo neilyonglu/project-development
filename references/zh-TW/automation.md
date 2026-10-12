@@ -37,7 +37,7 @@ python "<skill-dir>/scripts/workflow_check.py" coverage --inventory <changes.jso
 python "<skill-dir>/scripts/workflow_check.py" diagram --html <architecture.html>
 ```
 
-檢查依範本建立的頁面：`src`／`details`／`parts` 區塊存在；每個節點恰有一個合法 class 與含 `meaning` 的 details；測試節點與 `t_` 開頭一致；箭頭兩端都是已宣告的節點；Part 標記有對應分頁；虛線箭頭寫法；`reads`／`writes` 寫的欄位存在於對應 DB 方框的 `columns`；`files` 與 `data-file` 路徑存在（相對於 `--repo`，預設目前目錄）。輸出 `todo` 列出仍是虛線的節點，即尚待審查的檔案。只檢查結構，不判斷箭頭是否符合實際呼叫，也不渲染頁面。
+檢查依範本建立的頁面：`src`／`details`／`parts` 區塊存在；每個節點恰有一個合法 class 與含 `meaning` 的 details；測試節點與 `t_` 開頭一致；箭頭兩端都是已宣告的節點；Part 標記有對應分頁；虛線箭頭寫法；`reads`／`writes` 寫的欄位存在於對應 DB 方框的 `columns`；`files` 與 `data-file` 路徑存在（相對於 `--repo`，預設目前目錄）。輸出 `todo` 列出仍是虛線的節點，即尚待審查的檔案；`planned` 列出還不存在的檔案，不檢查其路徑。只檢查結構，不判斷箭頭是否符合實際呼叫，也不渲染頁面。
 
 ## 4. Skill 內部檔案連結
 

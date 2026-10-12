@@ -122,7 +122,7 @@ def coverage(report: dict, html: Path) -> dict:
             'limits': 'Checks data-file and node "files" declarations only, not diagram edges, node correctness, test coverage or rendering. Extra paths may be reused dependencies.'}
 
 
-NODE_CLASSES = {'seen', 'todo', 'test', 'data', 'datatodo', 'ext'}
+NODE_CLASSES = {'seen', 'todo', 'test', 'data', 'datatodo', 'ext', 'planned'}
 NODE_LINE = re.compile(r'^\s*(\w+)\s*[\[\(\{]')
 ARROW = re.compile(r'-->|==>|\.->|\.-|---')
 
@@ -209,6 +209,8 @@ def check_diagram(html: Path, repo: Path) -> dict:
         if not entry or not entry.get('meaning'):
             problems.append(f'node {node}: no details entry with a "meaning"')
             continue
+        if 'planned' in classes.get(node, []):
+            continue   # a planned file is not written yet; its files are where it will go
         for path in entry.get('files', []):
             if not (repo / path).exists():
                 problems.append(f'node {node}: file {path} does not exist')
@@ -220,7 +222,8 @@ def check_diagram(html: Path, repo: Path) -> dict:
         if not (repo / marker).exists():
             problems.append(f'data-file {marker} does not exist')
     todo = sorted(node for node in nodes if set(classes.get(node, [])) & {'todo', 'datatodo'})
-    return {'nodes': len(nodes), 'edges': len(edges), 'parts': len(parts), 'todo': todo, 'problems': problems,
+    planned = sorted(node for node in nodes if 'planned' in classes.get(node, []))
+    return {'nodes': len(nodes), 'edges': len(edges), 'parts': len(parts), 'todo': todo, 'planned': planned, 'problems': problems,
             'limits': 'Structure only: it cannot tell whether an arrow matches the real call, or render the page.'}
 
 

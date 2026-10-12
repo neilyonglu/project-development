@@ -29,9 +29,11 @@ Replace the complete example order content, including legend assumptions, node d
 | Data/config/types/routes, no active behavior | `id[/AgentTypes.ts/]` | `data`, or `datatodo` if unread |
 | DB table | `db_id[(table)]` | `seen` |
 | External service | `id[External LLM API]` | `ext` |
+| Planned file, not created yet | `id[server.py]` | `planned` |
 | Test file | `t_id([test_x.py])` | `test` |
 
 - The page colours boxes in the archify classic palette at draw time: each top-level subgraph is one layer and takes the next colour in order (cyan, green, orange, amber); a layer holding only DB tables, and every DB table, is purple; `ext` is amber and tests are grey. The class sets the border: solid for read (`seen`, `data`), dashed for unread (`todo`, `datatodo`). Make top-level subgraphs the real layers so the colours mean something.
+- `planned` draws a faded grey box so a file that does not exist yet is not mistaken for an unread one. Its `files` may name where it will go; the checker skips their existence. Switch it to `todo` once the file is created.
 - Every node occurs in exactly one `class` line with one kind above. Test nodes, and only test nodes, start with `t_`; hiding tests removes lines containing test IDs.
 - `fresh` (thick magenta border for nodes new in this Part) is added by the page, not handwritten.
 - `.scss` files live in the owning tsx node's `styles`/`files`, not separate boxes. Small wrapper-only components without data flow may use the omission list with reason.

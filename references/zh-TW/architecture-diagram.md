@@ -32,9 +32,11 @@
 | 純資料／設定／型別／路由表（本身不做事） | `id[/AgentTypes.ts/]` | `data`（還沒看：`datatodo`） |
 | DB table | `db_id[(table)]` | `seen` |
 | 外部服務 | `id[外部 LLM API]` | `ext` |
+| 規劃中、還不存在的檔案 | `id[server.py]` | `planned` |
 | 測試檔 | `t_id([test_x.py])` | `test` |
 
 - 方框顏色由頁面在畫圖時依 archify classic 配色決定：每個最外層 subgraph 是一層，依序取青、綠、橘、琥珀色；只放 DB table 的層和所有 DB table 是紫色；`ext` 琥珀色，測試灰色。class 決定框線：看過（`seen`、`data`）實線，還沒看（`todo`、`datatodo`）虛線。最外層 subgraph 要對應真實分層，顏色才有意義。
+- `planned` 畫成灰色淡框，避免把還不存在的檔案誤認成「存在但還沒看」。`files` 可以先寫預定路徑，檢查時不驗證是否存在；檔案建立後改成 `todo`。
 - 每個節點恰好出現在一行 `class` 中，用上表其中一個 class。測試節點、且只有測試節點的 id 以 `t_` 開頭：關掉「顯示測試」時，含 `t_` 的行整行移除。
 - `fresh`（洋紅粗框，這個 Part 新加的）由頁面依 Part 標記自動加上，不手寫。
 - `.scss` 不畫方框，列在用到它的 tsx 方框的 `styles` 與 `files`。只包一層、沒有資料流的小 UI 元件可不畫，放進「沒畫進圖的檔案」並寫原因。

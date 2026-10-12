@@ -99,6 +99,15 @@ class WorkflowChecks(unittest.TestCase):
             self.assertTrue(any('nowhere' in p for p in problems), problems)
             self.assertTrue(any('-. text -->' in p for p in problems), problems)
 
+    def test_planned_nodes_skip_the_file_check(self):
+        with tempfile.TemporaryDirectory() as directory:
+            html = Path(directory) / 'architecture.html'
+            html.write_text('<script type="text/plain" id="src">flowchart TD\n1|    tool[server.py]\n    class tool planned\n</script>'
+                            '<script type="application/json" id="details">{"tool": {"meaning": "m", "files": ["not/yet.py"]}}</script>'
+                            '<script type="application/json" id="parts">[{"tab": "All"}, {"tab": "Part 1"}]</script>', encoding='utf-8')
+            report = workflow.check_diagram(html, Path(directory))
+            self.assertEqual((report['problems'], report['planned']), ([], ['tool']))
+
     def test_column_uses_must_name_listed_columns(self):
         src = '1|    db_orders[(orders)]\n1|    repo[order_repo.py]\n'
         details = {'db_orders': {'columns': [['orderid', 'bigint', ''], ['status', 'varchar', '']]},
