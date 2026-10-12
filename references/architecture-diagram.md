@@ -103,6 +103,6 @@ python "<skill-dir>/scripts/workflow_check.py" coverage --inventory <changes.jso
 
 `diagram` checks structure/unread nodes; coverage accounts for inventory files. Neither proves real call semantics.
 
-Templates load Mermaid 11 and ELK from jsDelivr and JetBrains Mono from Google Fonts, and need network access. Open with an existing browser/automation capability and check the main graph, Parts, tests, zoom, both themes (the ◐ button) and error presentation. Compare rendered SVG nodes with reported nodes; structural checks do not prove rendering.
+Templates load Mermaid 11 and ELK from jsDelivr and JetBrains Mono from Google Fonts, and need network access. Open with an existing browser/automation capability and check the main graph, Parts, tests, zoom, both themes (the ◐ button), folding a block with its − and opening it again, and error presentation. Compare rendered SVG nodes with reported nodes; structural checks do not prove rendering.
 
 Locate the actual browser if using headless CLI; do not fix an OS or Chrome path. Without browser/network preserve editable source and structural results, explicitly record unverified rendering/interactions and do not automatically install a browser.

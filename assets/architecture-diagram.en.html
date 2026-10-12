@@ -63,6 +63,9 @@
   #diagram::-webkit-scrollbar { display:none; }
   #diagram.dragging, #diagram.dragging * { cursor:grabbing !important; user-select:none; }
   #diagram svg { display:block; max-width:none !important; }
+  #diagram .fold { display:inline-block; margin-left:8px; padding:0 5px; border:1px solid currentColor; border-radius:4px;
+                   line-height:1.2; cursor:pointer; font-weight:700; }
+  #diagram .fold:hover { background:var(--pill); }
   #diagram g.node rect { rx:8px; ry:8px; }
   #diagram g.cluster rect { rx:12px; ry:12px; }
   /* Colour only: Mermaid sized these boxes with its own font metrics, so size and spacing stay. */
@@ -219,6 +222,7 @@
         <li>Hover a node to see its purpose</li>
         <li>Click a node to open its file and function details; connected edges turn red</li>
         <li>Ctrl + mouse wheel: zoom around the pointer</li>
+        <li>Click the − beside a block title to fold the block into one box; click that box to open it again</li>
         <li>Press F5 after editing the file</li>
       </ul>
     </section>
@@ -251,6 +255,7 @@
   <span id="zoomLevel">100%</span>
   <button id="zoomIn" title="Zoom in">＋</button>
   <button id="zoomReset" title="Reset to 100%">Reset</button>
+  <button id="expandAll" title="Expand every collapsed block">Expand all</button>
   <span>(Ctrl + mouse wheel also works)</span>
 </div>
 <div id="diagram"></div>
@@ -536,7 +541,7 @@ flowchart TD
   // change is needed: DB tables, external services and tests have their own colour, and the
   // read state shows as a solid or dashed border. Mermaid applies `style` lines inline, over classes.
   const LAYER_ROLES = ["frontend", "backend", "service", "ext"];
-  function styleNodes(text) {
+  function styleNodes(text, full = text) {
     const classes = {};
     const nodes = [];
     const layers = [];
@@ -554,15 +559,25 @@ flowchart TD
       if (node && !ARROW.test(line)) nodes.push({ id: node[1], shape: node[2], layer: stack[0] || null });
     }
     // A layer holding only DB tables is the database layer; the others take the next colour in turn.
-    const isDbOnly = id => nodes.some(n => n.layer === id) && nodes.filter(n => n.layer === id).every(n => n.shape === "[(");
-    const codeLayers = layers.filter(id => !isDbOnly(id));
+    // Colours come from the whole diagram, before folding, so folding a block never recolours another.
+    const allLayers = [], allNodes = [], open = [];
+    for (const line of full.split("\n")) {
+      const sub = line.match(/^\s*subgraph (\w+)/);
+      if (sub) { if (!open.length) allLayers.push(sub[1]); open.push(sub[1]); continue; }
+      if (line.trim() === "end") { open.pop(); continue; }
+      const node = line.match(/^\s*(\w+)\s*(\[\(|\(\[|[\[\(\{"])/);
+      if (node && !ARROW.test(line)) allNodes.push({ shape: node[2], layer: open[0] || null });
+    }
+    const isDbOnly = id => allNodes.some(n => n.layer === id) && allNodes.filter(n => n.layer === id).every(n => n.shape === "[(");
+    const codeLayers = allLayers.filter(id => !isDbOnly(id));
     const layerRole = id => isDbOnly(id) ? "database" : LAYER_ROLES[codeLayers.indexOf(id) % LAYER_ROLES.length];
     const roleOf = n => {
       const c = classes[n.id] || new Set();
       if (n.id.startsWith("t_") || c.has("test")) return "test";
       if (c.has("ext")) return "ext";
       if (n.shape === "[(") return "database";
-      return n.layer ? layerRole(n.layer) : "frontend";
+      const layer = n.layer || (n.id.endsWith("_c") ? n.id.slice(0, -2) : null);   // a folded top-level layer
+      return layer ? layerRole(layer) : "frontend";
     };
     const out = [text];
     for (const n of nodes) {
@@ -575,7 +590,7 @@ flowchart TD
       const parts = [
         `fill:${tok(`--r-${colour}-fill`)}`,
         `stroke:${isFresh ? tok("--k-fresh") : tok(`--r-${colour}`)}`,
-        `stroke-width:${isFresh ? 3 : role === "ext" ? 2 : 1.5}px`,
+        `stroke-width:${isFresh ? 3 : role === "ext" || n.id.endsWith("_c") ? 2 : 1.5}px`,
         `color:${isPlanned ? tok("--r-planned-text") : isTodo ? tok("--r-todo-text") : tok("--fg")}`,
       ];
       if (isPlanned) parts.push("stroke-dasharray:2 4");
@@ -718,18 +733,101 @@ flowchart TD
     tabs.appendChild(button);
   });
 
+  // Collapsible blocks. A collapsed block shows as one double-sided box "title ＋n" in its place;
+  // edges into it point at that box, and parallel edges merge into one labelled ×n.
+  const COLLAPSE_KEY = "collapsed:" + location.pathname;
+  let COLLAPSED = new Set();
+  try { COLLAPSED = new Set(JSON.parse(localStorage.getItem(COLLAPSE_KEY) || "[]")); } catch {}
+  const saveCollapsed = () => { try { localStorage.setItem(COLLAPSE_KEY, JSON.stringify([...COLLAPSED])); } catch {} };
+  function collapseGroups(text) {
+    const out = [];
+    const rest = [];
+    const owner = {};            // hidden node or block id -> the collapsed block that hides it
+    let hider = null, depth = 0, box = null;
+    for (const line of text.split("\n")) {
+      const sub = line.match(/^(\s*)subgraph (\w+)(?:\[(.*)\])?/);
+      if (sub) {
+        if (hider) { owner[sub[2]] = hider; depth++; continue; }
+        if (COLLAPSED.has(sub[2])) {
+          hider = sub[2]; depth = 1;
+          box = { indent: sub[1], id: sub[2], title: (sub[3] || sub[2]).split("：")[0].replace(/"/g, ""), count: 0 };
+          out.push(box);
+          continue;
+        }
+        out.push(line); continue;
+      }
+      if (line.trim() === "end") {
+        if (hider) { if (--depth === 0) hider = null; continue; }
+        out.push(line); continue;
+      }
+      const node = line.match(/^\s*(\w+)\s*(\[\(|\(\[|[\[\(\{"])/);
+      if (node && !ARROW.test(line)) {
+        if (hider) { owner[node[1]] = hider; box.count++; continue; }
+        out.push(line); continue;
+      }
+      if (hider && /^\s*direction\s/.test(line)) continue;
+      (ARROW.test(line) || /^\s*(class|style)\s/.test(line) ? rest : out).push(line);
+    }
+    const shown = id => owner[id] ? owner[id] + "_c" : id;
+    const hidden = id => owner[id] || COLLAPSED.has(id);
+    const merged = new Map();
+    const tail = [];
+    for (const line of rest) {
+      const words = line.trim().split(/\s+/);
+      if (/^\s*class\s/.test(line)) {
+        const ids = words[1].split(",").filter(id => !hidden(id));
+        if (ids.length) tail.push(`    class ${ids.join(",")} ${words[2]}`);
+      } else if (/^\s*style\s/.test(line)) {
+        if (!hidden(words[1])) tail.push(line);
+      } else {
+        const from = shown(words[0]), to = shown(words[words.length - 1]);
+        if (from === to) continue;
+        const key = from + "|" + to;
+        if (merged.has(key)) { merged.get(key).count++; continue; }
+        const edge = { from, to, count: 1, kind: line.includes("==") ? "==" : line.includes(".->") ? "-." : "--",
+          line: line.replace(/^(\s*)\w+/, `$1${from}`).replace(/\w+(\s*)$/, `${to}$1`) };
+        merged.set(key, edge);
+        tail.push(edge);
+      }
+    }
+    const edgeLine = e => e.count === 1 ? e.line
+      : e.kind === "==" ? `    ${e.from} == ×${e.count} ==> ${e.to}`
+      : e.kind === "-." ? `    ${e.from} -. ×${e.count} .-> ${e.to}`
+      : `    ${e.from} -- ×${e.count} --> ${e.to}`;
+    return [...out.map(l => typeof l === "string" ? l : `${l.indent}${l.id}_c[["${l.title} ＋${l.count}"]]`),
+            ...tail.map(l => typeof l === "string" ? l : edgeLine(l))].join("\n");
+  }
+  // A "−" beside each expanded block's title folds it.
+  function addFoldButtons(text) {
+    const ids = [...text.matchAll(/^\s*subgraph (\w+)/gm)].map(m => m[1]);
+    diagram.querySelectorAll("g.cluster").forEach(cluster => {
+      const id = ids.find(sid => cluster.id === sid || cluster.id.endsWith("-" + sid));
+      const object = cluster.querySelector(":scope > .cluster-label foreignObject");
+      const inner = object && object.firstElementChild;
+      if (!id || !inner) return;
+      object.setAttribute("width", Number(object.getAttribute("width")) + 22);
+      const fold = document.createElement("span");
+      fold.className = "fold"; fold.textContent = "−"; fold.title = "Fold this block";
+      fold.addEventListener("click", event => { event.stopPropagation(); COLLAPSED.add(id); saveCollapsed(); draw(); });
+      // Inside the title's own text line: after the block <p> it would wrap below and be clipped.
+      (inner.querySelector("p") || inner.querySelector(".nodeLabel") || inner).append(fold);
+    });
+  }
+  document.getElementById("expandAll").onclick = () => { COLLAPSED.clear(); saveCollapsed(); draw(); };
   async function draw() {
     await document.fonts.ready;
     [...tabs.children].forEach((b, i) => b.setAttribute("aria-selected", String(i === part)));
     document.getElementById("partNote").textContent = PARTS[part].note;
     const partSource = sourceForPart(part);
-    const text = toggle.checked
+    const visible = toggle.checked
       ? partSource
       : partSource.split("\n").filter(line => !/\bt_\w+/.test(line)).join("\n");
-    const { svg } = await mermaid.render("graph" + Date.now(), styleNodes(text));
+    const text = collapseGroups(visible);
+    const { svg } = await mermaid.render("graph" + Date.now(), styleNodes(text, visible));
     diagram.innerHTML = svg;
     fitClusters(text);
     alignClusterLabels();
+    addFoldButtons(text);
     renderedEdges = listEdges(text);
     attachTips();
     naturalWidth = diagram.querySelector("svg").viewBox.baseVal.width;
@@ -980,7 +1078,12 @@ flowchart TD
       node.addEventListener("mouseenter", event => showTip(node, event));
       node.addEventListener("mousemove", moveTip);
       node.addEventListener("mouseleave", () => { tip.style.display = "none"; });
-      node.addEventListener("click", event => { event.stopPropagation(); tip.style.display = "none"; openPanel(node); });
+      node.addEventListener("click", event => {
+        event.stopPropagation(); tip.style.display = "none";
+        const box = (node.id.match(/flowchart-(\w+?)_c-\d+$/) || [])[1];
+        if (box && COLLAPSED.has(box)) { COLLAPSED.delete(box); saveCollapsed(); draw(); return; }
+        openPanel(node);
+      });
     });
   }
   let naturalWidth = 0;

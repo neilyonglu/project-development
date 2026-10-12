@@ -103,6 +103,6 @@ python "<skill-dir>/scripts/workflow_check.py" coverage --inventory <changes.jso
 
 `diagram` 檢查結構並列出仍是虛線的節點；`coverage` 檢查每個變更檔案都在 `files` 或 `data-file` 中。兩者都不能判斷箭頭是否符合實際呼叫，仍需人工核對。
 
-頁面從 jsDelivr 載入 Mermaid 11 與 ELK 版面、從 Google Fonts 載入 JetBrains Mono，需要網路。使用現有瀏覽器或可用的瀏覽器自動化能力開啟 HTML，核對主圖、Part、測試切換、縮放、深淺兩種主題（◐ 按鈕）與錯誤提示；取得真正渲染的 SVG 節點數，與 `diagram` 回報的 `nodes` 比較。不可把 HTML 結構檢查當成渲染驗證。
+頁面從 jsDelivr 載入 Mermaid 11 與 ELK 版面、從 Google Fonts 載入 JetBrains Mono，需要網路。使用現有瀏覽器或可用的瀏覽器自動化能力開啟 HTML，核對主圖、Part、測試切換、縮放、深淺兩種主題（◐ 按鈕）、用 − 收合分組再點開，以及錯誤提示；取得真正渲染的 SVG 節點數，與 `diagram` 回報的 `nodes` 比較。不可把 HTML 結構檢查當成渲染驗證。
 
 需要 headless CLI 時先定位實際瀏覽器執行檔，不固定作業系統或 Chrome 安裝路徑。沒有網路或瀏覽器時保留 Mermaid 原始碼與結構檢查結果，在交付紀錄明確寫出渲染及互動未驗證；不為檢查而自行安裝瀏覽器。
