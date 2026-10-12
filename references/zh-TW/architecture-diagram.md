@@ -15,6 +15,7 @@
 | `<script type="application/json" id="details">` | 每個節點的說明，key 是節點 id |
 | `<script type="application/json" id="parts">` | Part 分頁 |
 | 「沒畫進圖的檔案」清單 | 每個變更檔案若不畫成節點：`<li data-file="repo 相對路徑"><code>路徑</code>原因</li>` |
+| 「縮寫對照」清單 | `<li><code>DS</code>Days of Supply</li>`；頁面用到的縮寫只在這裡寫一次全名，其他地方一律只寫縮寫 |
 
 範本內的訂單範例只示範寫法，全部換成本次內容；不保留範例節點。
 

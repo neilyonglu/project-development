@@ -12,6 +12,7 @@ Use the same diagram for step 2 of [review and delivery](review-delivery.md) and
 | `<script type="application/json" id="details">` | Node descriptions keyed by ID |
 | `<script type="application/json" id="parts">` | Part tabs and notes |
 | Files omitted from diagram | `<li data-file="repository-relative-path"><code>path</code>reason</li>` |
+| Abbreviations | `<li><code>DS</code>Days of Supply</li>`; every abbreviation used on the page is spelled out here once and stays bare everywhere else |
 
 Replace the complete example order content, including legend assumptions, node descriptions, part notes and omission reasons, with this work's facts. Keep IDs/files/API/DB names unchanged; use the selected language for prose and visible controls. Do not retain sample nodes or another project's layered legend in unrelated projects.
 

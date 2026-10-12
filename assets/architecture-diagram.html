@@ -164,7 +164,8 @@
   .legend .ln.thick { border-top-width:4px; }
   .legend .ln.dot { border-top-style:dotted; }
   .legend .num { flex:none; width:26px; font-size:11px; color:var(--muted); }
-  .legend .unlisted code { margin-right:8px; font-family:inherit; font-size:11px; color:var(--pill-fg); }
+  .legend .glossary { grid-column:1 / -1; display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:0 24px; }
+  .legend .unlisted code, .legend .glossary code { margin-right:8px; font-family:inherit; font-size:11px; color:var(--pill-fg); }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -209,6 +210,15 @@
         <li>檔案改過之後按 F5 重新整理</li>
       </ul>
     </section>
+  </div>
+</details>
+<details class="legend">
+  <summary>縮寫對照</summary>
+  <div class="legend-body">
+    <ul class="keys plain glossary">
+      <li><code>API</code>Application Programming Interface</li>
+      <li><code>DB</code>Database</li>
+    </ul>
   </div>
 </details>
 <details class="legend">
