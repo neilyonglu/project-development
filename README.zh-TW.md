@@ -97,6 +97,6 @@ Claude Code：
 
 ## 參考與授權
 
-設計參考（未複製其程式或完整指令）：[Superpowers](https://github.com/obra/superpowers) 的驗證證據與流程分級、[Spec Kit](https://github.com/github/spec-kit) 的技術脈絡與複雜度理由、[create-feature](https://github.com/garethrhughes/skills/blob/main/create-feature/SKILL.md) 的共通／專案規則分層與審查交接。
+設計參考（未複製其程式或完整指令）：[Superpowers](https://github.com/obra/superpowers) 的驗證證據與流程分級、[Spec Kit](https://github.com/github/spec-kit) 的技術脈絡與複雜度理由、[create-feature](https://github.com/garethrhughes/skills/blob/main/create-feature/SKILL.md) 的共通／專案規則分層與審查交接、[Archify](https://github.com/tt-a1i/archify)（MIT）的架構圖配色與視覺風格。
 
 本 skill 使用 [MIT License](LICENSE)，版本為 `0.1.0`。原始碼：[neilyonglu/project-development](https://github.com/neilyonglu/project-development)。

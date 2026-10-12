@@ -98,6 +98,6 @@ For real agent evaluations record agent/version, inputs, fixture, artifacts, act
 
 ## References and license
 
-Design references, without copying their code/full instructions: [Superpowers](https://github.com/obra/superpowers) for evidence and proportional workflow; [Spec Kit](https://github.com/github/spec-kit) for technical context and complexity justification; [create-feature](https://github.com/garethrhughes/skills/blob/main/create-feature/SKILL.md) for shared/project rules and review handoffs.
+Design references, without copying their code/full instructions: [Superpowers](https://github.com/obra/superpowers) for evidence and proportional workflow; [Spec Kit](https://github.com/github/spec-kit) for technical context and complexity justification; [create-feature](https://github.com/garethrhughes/skills/blob/main/create-feature/SKILL.md) for shared/project rules and review handoffs; [Archify](https://github.com/tt-a1i/archify) (MIT) for the architecture diagram colour palette and visual style.
 
 [MIT License](LICENSE). Skill version: `0.1.0`. Source: [neilyonglu/project-development](https://github.com/neilyonglu/project-development). Maintain both documentation editions when changing workflow requirements; English is the execution edition.

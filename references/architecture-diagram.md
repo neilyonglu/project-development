@@ -8,7 +8,7 @@ Use the same diagram for step 2 of [review and delivery](review-delivery.md) and
 |---|---|
 | `<html lang>` | `zh-Hant` for Traditional Chinese, `en` for English |
 | `<title>`, `<h1>` | Work identity and architecture title in the selected language |
-| `<script type="text/plain" id="src">` | Mermaid `flowchart TD`; retain template `classDef` |
+| `<script type="text/plain" id="src">` | Mermaid `flowchart TD`; retain template `classDef` (the page recolours nodes at draw time) |
 | `<script type="application/json" id="details">` | Node descriptions keyed by ID |
 | `<script type="application/json" id="parts">` | Part tabs and notes |
 | Files omitted from diagram | `<li data-file="repository-relative-path"><code>path</code>reason</li>` |
@@ -30,8 +30,9 @@ Replace the complete example order content, including legend assumptions, node d
 | External service | `id[External LLM API]` | `ext` |
 | Test file | `t_id([test_x.py])` | `test` |
 
+- The page colours boxes in the archify classic palette at draw time: each top-level subgraph is one layer and takes the next colour in order (cyan, green, orange, amber); a layer holding only DB tables, and every DB table, is purple; `ext` is amber and tests are grey. The class sets the border: solid for read (`seen`, `data`), dashed for unread (`todo`, `datatodo`). Make top-level subgraphs the real layers so the colours mean something.
 - Every node occurs in exactly one `class` line with one kind above. Test nodes, and only test nodes, start with `t_`; hiding tests removes lines containing test IDs.
-- `fresh` (purple border for nodes new in this Part) is added by the page, not handwritten.
+- `fresh` (thick magenta border for nodes new in this Part) is added by the page, not handwritten.
 - `.scss` files live in the owning tsx node's `styles`/`files`, not separate boxes. Small wrapper-only components without data flow may use the omission list with reason.
 
 ## src: edges
@@ -47,7 +48,7 @@ Replace the complete example order content, including legend assumptions, node d
 
 - For stacked branches, a Part represents a branch in merge order.
 - Prefix node/subgraph/end lines with `N|`, the Part where they first appear. Do not prefix edge/class lines; edges appear when both endpoints do.
-- Part N shows 1..N. For N > 1, new nodes have purple outlines; an entirely new subgraph highlights its outer boundary.
+- Part N shows 1..N. For N > 1, new nodes have thick magenta outlines; an entirely new subgraph highlights its outer boundary.
 - A single branch uses `1|` everywhere and parts containing the all-parts view and Part 1.
 
 ## details
@@ -98,6 +99,6 @@ python "<skill-dir>/scripts/workflow_check.py" coverage --inventory <changes.jso
 
 `diagram` checks structure/unread nodes; coverage accounts for inventory files. Neither proves real call semantics.
 
-Templates load Mermaid 11 and ELK from jsDelivr and need network access. Open with an existing browser/automation capability and check the main graph, Parts, tests, zoom and error presentation. Compare rendered SVG nodes with reported nodes; structural checks do not prove rendering.
+Templates load Mermaid 11 and ELK from jsDelivr and JetBrains Mono from Google Fonts, and need network access. Open with an existing browser/automation capability and check the main graph, Parts, tests, zoom, both themes (the ◐ button) and error presentation. Compare rendered SVG nodes with reported nodes; structural checks do not prove rendering.
 
 Locate the actual browser if using headless CLI; do not fix an OS or Chrome path. Without browser/network preserve editable source and structural results, explicitly record unverified rendering/interactions and do not automatically install a browser.

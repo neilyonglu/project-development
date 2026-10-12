@@ -5,74 +5,147 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>#ISSUE 架構圖</title>
 <style>
-  :root { --bg:#ffffff; --fg:#0f172a; --muted:#64748b; --card:#ffffff; --line:#e2e8f0; --pill:#eef2ff; --pill-fg:#3730a3; --amber-bg:#fef3c7; --amber-fg:#92400e; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --fg:#e2e8f0; --muted:#94a3b8; --card:#111a2e; --line:#1e293b; --pill:#1e2a4a; --pill-fg:#c7d2fe; --amber-bg:#3a2a0a; --amber-fg:#fcd34d; } }
-  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font-family:system-ui,"Microsoft JhengHei",sans-serif; }
-  h1 { font-size:18px; margin:0 0 4px; }
-  p { margin:0 0 16px; color:var(--muted); font-size:13px; }
-  #diagram { overflow:auto; max-height:calc(100vh - 120px); border:1px solid var(--muted); border-radius:6px; }
+  /* Step numbers ①②③ carry meaning; JetBrains Mono draws them tiny, so only those
+     code points come from a system font. */
+  @font-face { font-family:"StepNum"; src:local("Microsoft JhengHei"), local("Segoe UI Symbol"), local("PingFang TC"); unicode-range:U+2460-24FF; }
+  /* Archify "classic" palette. Mermaid classDef cannot take rgba() (its commas split the
+     style list), so translucent fills are 8-digit hex. styleNodes() reads the --r-* role colours. */
+  :root, :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg:#020617; --grid:#1e293b66; --fg:#ffffff; --muted:#94a3b8;
+    --panel:#0f172a80; --panel-border:#1e293b; --card:#0f172a; --line:#1e293b; --mask:#0f172a;
+    --lane-solid:#0a1224; --lane-stroke:#334155; --arrow:#64748b; --accent:#34d399;
+    --toolbar-bg:#0f172acc; --toolbar-border:#334155; --toolbar-text:#e2e8f0;
+    --pill:#1e293b; --pill-fg:#a5f3fc; --amber-bg:#78350f4d; --amber-fg:#fcd34d;
+    /* Box colour = role (archify component types); solid / dashed border = read / not read yet. */
+    --r-frontend-fill:#08334466; --r-frontend:#22d3ee;
+    --r-backend-fill:#064e3b66;  --r-backend:#34d399;
+    --r-service-fill:#fb923c4d;  --r-service:#fb923c;
+    --r-database-fill:#4c1d9566; --r-database:#a78bfa;
+    --r-ext-fill:#78350f4d;      --r-ext:#fbbf24;
+    --r-test-fill:#1e293b80;     --r-test:#94a3b8;
+    --r-todo-text:#94a3b8; --label-bg:#091024; --edge-main:#34d399;
+    --k-fresh:#e879f9; --k-hot:#fb7185;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg:#f8fafc; --grid:#e2e8f099; --fg:#0f172a; --muted:#64748b;
+    --panel:#ffffff; --panel-border:#e2e8f0; --card:#ffffff; --line:#e2e8f0; --mask:#ffffff;
+    --lane-solid:#f8fafc; --lane-stroke:#cbd5e1; --arrow:#94a3b8; --accent:#059669;
+    --toolbar-bg:#ffffffeb; --toolbar-border:#cbd5e1; --toolbar-text:#334155;
+    --pill:#ecfeff; --pill-fg:#0e7490; --amber-bg:#fef3c7; --amber-fg:#92400e;
+    --r-frontend-fill:#22d3ee26; --r-frontend:#0891b2;
+    --r-backend-fill:#34d3992e;  --r-backend:#059669;
+    --r-service-fill:#fb923c26;  --r-service:#ea580c;
+    --r-database-fill:#a78bfa33; --r-database:#7c3aed;
+    --r-ext-fill:#fbbf242e;      --r-ext:#d97706;
+    --r-test-fill:#94a3b82e;     --r-test:#64748b;
+    --r-todo-text:#64748b; --label-bg:#ffffff; --edge-main:#059669;
+    --k-fresh:#c026d3; --k-hot:#e11d48;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:24px 28px; background:var(--bg); color:var(--fg); transition:background .2s, color .2s;
+         font-family:"StepNum","JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,"Microsoft JhengHei","PingFang TC",monospace; }
+  .head { display:flex; align-items:center; gap:10px; margin:0 0 14px; }
+  .pulse { flex:none; width:12px; height:12px; border-radius:50%; background:var(--r-frontend); }
+  h1 { font-size:20px; font-weight:700; letter-spacing:-.02em; margin:0; }
+  #themeBtn { margin-left:auto; }
+  p { margin:0 0 14px; color:var(--muted); font-size:12px; line-height:1.6; }
+  #diagram { overflow:auto; max-height:calc(100vh - 150px); padding:20px; border-radius:16px; border:1px solid var(--panel-border);
+             background-color:var(--panel);
+             background-image:linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+             background-size:32px 32px; background-position:-1px -1px; }
   #diagram svg { display:block; max-width:none !important; }
-  .bar { display:flex; gap:12px; align-items:center; margin-bottom:8px; font-size:13px; }
-  .bar button { min-width:32px; padding:2px 8px; cursor:pointer; }
+  #diagram g.node rect { rx:8px; ry:8px; }
+  #diagram g.cluster rect { rx:12px; ry:12px; }
+  /* Colour only: Mermaid sized these boxes with its own font metrics, so size and spacing stay. */
+  #diagram .cluster-label, #diagram .cluster-label * { color:var(--muted) !important; fill:var(--muted) !important; }
+  #diagram .edgeLabel, #diagram .edgeLabel p { color:var(--muted) !important; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; font-size:12px; color:var(--muted); }
+  button { font:inherit; font-size:12px; min-width:32px; padding:4px 10px; cursor:pointer; border-radius:8px;
+           border:1px solid var(--toolbar-border); background:var(--toolbar-bg); color:var(--toolbar-text); }
+  button:hover { border-color:var(--r-frontend); color:var(--r-frontend); }
   label { cursor:pointer; user-select:none; }
-  .tabs { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px; }
-  .tabs button { padding:6px 12px; font-size:13px; cursor:pointer; border:1px solid var(--muted); border-radius:6px 6px 0 0; background:transparent; color:var(--fg); }
-  .tabs button[aria-selected="true"] { background:#1d4ed8; border-color:#1d4ed8; color:#fff; }
-  #tip { position:fixed; z-index:10; max-width:420px; padding:8px 10px; border-radius:6px; font-size:12px; line-height:1.5;
-         background:var(--fg); color:var(--bg); box-shadow:0 4px 16px rgba(0,0,0,.25); pointer-events:none; white-space:pre-line; display:none; }
-  #tip b { display:block; margin-bottom:2px; }
-  #tip i { display:block; font-style:normal; color:#fbbf24; margin-bottom:4px; }
+  input[type=checkbox] { accent-color:var(--accent); }
+  .tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .tabs button { padding:6px 14px; border-radius:999px; }
+  .tabs button[aria-selected="true"] { background:color-mix(in srgb, var(--r-frontend) 18%, transparent); border-color:var(--r-frontend); color:var(--r-frontend); font-weight:600; }
+  #tip { position:fixed; z-index:10; max-width:420px; padding:10px 12px; border-radius:10px; font-size:12px; line-height:1.55;
+         background:var(--card); color:var(--fg); border:1px solid var(--toolbar-border);
+         box-shadow:0 12px 32px rgba(0,0,0,.35); pointer-events:none; white-space:pre-line; display:none; }
+  #tip b { display:block; margin-bottom:2px; color:var(--r-frontend); }
+  #tip i { display:block; font-style:normal; color:var(--amber-fg); margin-bottom:4px; }
   #diagram g.node { cursor:help; }
-  #overlay { position:fixed; top:0; right:0; bottom:0; z-index:20; display:none; width:min(460px, 100vw); padding:12px; box-sizing:border-box; }
+  #overlay { position:fixed; top:0; right:0; bottom:0; z-index:20; display:none; width:min(460px, 100vw); padding:12px; }
   #overlay.open { display:block; }
-  #panel { position:relative; height:100%; overflow:auto; box-sizing:border-box; padding:20px 22px 18px;
-           border-radius:14px; background:var(--card); color:var(--fg); border:1px solid var(--line);
-           box-shadow:0 24px 60px rgba(15,23,42,.30), 0 2px 8px rgba(15,23,42,.12); animation:slide .16s ease-out; }
+  #panel { position:relative; height:100%; overflow:auto; padding:20px 22px 18px;
+           border-radius:16px; background:var(--card); color:var(--fg); border:1px solid var(--toolbar-border);
+           box-shadow:0 28px 80px rgba(0,0,0,.40); animation:slide .16s ease-out; }
   @keyframes slide { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:none; } }
   /* The open drawer takes its width from the page, so it covers none of the diagram. */
   @media (min-width:900px) { body.drawer-open { padding-right:476px; } }
-  #diagram g.node.picked :is(rect, polygon, path, circle, ellipse) { stroke:#dc2626 !important; stroke-width:4px !important; }
-  #diagram path.hot { stroke:#dc2626 !important; stroke-width:3.5px !important; }
-  #diagram .edgeLabel.hot, #diagram .edgeLabel.hot * { color:#dc2626 !important; fill:#dc2626 !important; font-weight:700 !important; }
-  #panel .kind { font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
-  #panel h2 { font-size:18px; margin:0 36px 8px 0; word-break:break-all; }
-  #panel .meaning { margin:0 0 14px; padding:8px 10px; border-radius:8px; font-size:13px; line-height:1.5;
+  /* Monospace bold keeps the same advance width, so Mermaid's measured boxes still fit. */
+  #diagram g.node .nodeLabel, #diagram g.node .nodeLabel * { font-weight:600; }
+  #diagram g.cluster .cluster-label, #diagram g.cluster .cluster-label * { font-weight:600; }
+  /* Edges by meaning: plain call, cross-layer call (thick), return (dotted). */
+  #diagram .flowchart-link { stroke:var(--arrow) !important; stroke-width:1.4px !important; }
+  #diagram .flowchart-link.edge-thickness-thick { stroke:var(--edge-main) !important; stroke-width:2.2px !important; }
+  #diagram .flowchart-link.edge-pattern-dotted { stroke:var(--muted) !important; stroke-width:1.2px !important; stroke-dasharray:3 4 !important; opacity:.85; }
+  #diagram marker path { fill:var(--arrow) !important; stroke:var(--arrow) !important; }
+  #diagram .edgeLabel rect, #diagram .labelBkg { fill:var(--label-bg) !important; background:var(--label-bg) !important; opacity:1 !important; }
+  #diagram .edgeLabel, #diagram .edgeLabel p, #diagram .edgeLabel span { background:var(--label-bg) !important; }
+  #diagram path.hot, #diagram .flowchart-link.hot { stroke:var(--k-hot) !important; stroke-width:3px !important; opacity:1; }
+  #diagram .edgeLabel.hot, #diagram .edgeLabel.hot * { color:var(--k-hot) !important; fill:var(--k-hot) !important; font-weight:700 !important; }
+  #panel .kind { font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+  #panel h2 { font-size:17px; margin:0 36px 10px 0; word-break:break-all; color:var(--r-frontend); }
+  #panel .meaning { margin:0 0 14px; padding:9px 12px; border-radius:10px; font-size:12px; line-height:1.6;
                     background:var(--amber-bg); color:var(--amber-fg); }
   #panel ul { list-style:none; margin:0; padding:0; }
   #panel li { display:grid; grid-template-columns:minmax(0, max-content) 1fr; gap:4px 12px; align-items:baseline;
-              padding:8px 0; border-top:1px solid var(--line); font-size:13px; line-height:1.5; }
+              padding:8px 0; border-top:1px solid var(--line); font-size:12px; line-height:1.6; }
   #panel li:first-child { border-top:0; }
-  #panel code { font-family:ui-monospace,Consolas,monospace; font-size:12px; padding:2px 8px; border-radius:999px;
+  #panel code { font-family:inherit; font-size:11px; padding:2px 8px; border-radius:999px;
                 background:var(--pill); color:var(--pill-fg); white-space:normal; word-break:break-all; max-width:220px; }
-  #panel .close { position:absolute; top:12px; right:12px; width:30px; height:30px; border-radius:50%; border:0; cursor:pointer;
-                  background:var(--pill); color:var(--fg); font-size:15px; line-height:30px; }
-  #panel .close:hover { filter:brightness(.95); }
-  #panel .empty { font-size:13px; color:var(--muted); margin:0; }
+  #panel .close { position:absolute; top:12px; right:12px; width:30px; height:30px; padding:0; border-radius:50%; line-height:28px; }
+  #panel .empty { font-size:12px; color:var(--muted); margin:0; }
   #panel .files { display:flex; flex-wrap:wrap; gap:4px; margin:0 0 14px; }
   #panel .files code { max-width:none; background:transparent; border:1px solid var(--line); color:var(--muted); }
   #panel .hint { margin:14px 0 0; font-size:11px; color:var(--muted); text-align:right; }
-  @media (max-width:520px) { #panel li { grid-template-columns:1fr; } #panel code { max-width:none; } }
-  .legend { margin:0 0 12px; border:1px solid var(--line); border-radius:8px; background:var(--card); font-size:13px; }
-  .legend summary { padding:8px 12px; cursor:pointer; font-weight:600; user-select:none; }
-  .legend[open] summary { border-bottom:1px solid var(--line); }
-  .legend-body { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px 24px; padding:12px; }
-  .legend h3 { margin:0 0 6px; font-size:13px; }
+  @media (max-width:520px) { body { padding:16px; } #panel li { grid-template-columns:1fr; } #panel code { max-width:none; } }
+  .legend { margin:0 0 10px; border:1px solid var(--panel-border); border-radius:12px; background:var(--panel); font-size:12px; }
+  .legend summary { padding:9px 14px; cursor:pointer; font-weight:600; user-select:none; }
+  .legend[open] summary { border-bottom:1px solid var(--panel-border); }
+  .legend-body { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px 24px; padding:14px; }
+  .legend h3 { margin:0 0 6px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
   .legend p { margin:0; color:var(--fg); line-height:1.6; }
   .legend .keys { list-style:none; margin:0; padding:0; }
-  .legend .keys li { display:flex; align-items:center; gap:8px; padding:3px 0; line-height:1.5; }
+  .legend .keys li { display:flex; align-items:center; gap:8px; padding:3px 0; line-height:1.6; }
   .legend .keys.plain li::before { content:"•"; color:var(--muted); }
-  .legend .sw { flex:none; width:26px; height:16px; border:1.5px solid; border-radius:2px; box-sizing:border-box; }
+  .legend .sw { flex:none; width:26px; height:16px; border:1.5px solid; border-radius:4px; }
+  .legend .sw.fresh { background:transparent; border-color:var(--k-fresh); border-width:3px; }
+  .legend .sw.r-frontend { background:var(--r-frontend-fill); border-color:var(--r-frontend); }
+  .legend .sw.r-backend  { background:var(--r-backend-fill);  border-color:var(--r-backend); }
+  .legend .sw.r-service  { background:var(--r-service-fill);  border-color:var(--r-service); }
+  .legend .sw.r-database { background:var(--r-database-fill); border-color:var(--r-database); }
+  .legend .sw.r-ext      { background:var(--r-ext-fill);      border-color:var(--r-ext); border-width:2px; }
+  .legend .sw.r-test     { background:var(--r-test-fill);     border-color:var(--r-test); border-radius:8px; }
+  .legend .sw.dash { border-style:dashed; background:transparent; border-color:var(--muted); }
+  .legend .sw.solid { background:transparent; border-color:var(--muted); }
+  .legend .ln.main { border-top-color:var(--edge-main); border-top-width:3px; }
+  .legend .ln.dot { border-top-color:var(--muted); }
   .legend .sw.para { transform:skewX(-18deg); }
   .legend .sw.cyl { border-radius:50% / 30%; }
-  .legend .ln { flex:none; width:26px; border-top:2px solid var(--muted); }
+  .legend .ln { flex:none; width:26px; border-top:2px solid var(--arrow); }
   .legend .ln.thick { border-top-width:4px; }
   .legend .ln.dot { border-top-style:dotted; }
   .legend .num { flex:none; width:26px; font-size:11px; color:var(--muted); }
-  .legend .unlisted code { margin-right:8px; font-family:ui-monospace,Consolas,monospace; font-size:12px; }
+  .legend .unlisted code { margin-right:8px; font-family:inherit; font-size:11px; color:var(--pill-fg); }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-<h1>#ISSUE 架構圖</h1>
+<div class="head"><span class="pulse"></span><h1>#ISSUE 架構圖</h1><button id="themeBtn" title="切換深色 / 淺色">◐ 主題</button></div>
 <details class="legend">
   <summary>怎麼看這張圖</summary>
   <div class="legend-body">
@@ -83,20 +156,21 @@
     <section>
       <h3>方框代表什麼</h3>
       <ul class="keys">
-        <li><span class="sw" style="background:#dbeafe;border-color:#1d4ed8"></span>一個程式檔，已經看過</li>
-        <li><span class="sw" style="background:#f8fafc;border-color:#94a3b8;border-style:dashed"></span>一個程式檔，還沒看</li>
-        <li><span class="sw" style="background:#dcfce7;border-color:#15803d;border-radius:8px"></span>測試檔，可用「顯示測試」隱藏</li>
-        <li><span class="sw para" style="background:#fef3c7;border-color:#b45309"></span>只放資料或設定、本身不做事的檔案（虛線 = 還沒看）</li>
-        <li><span class="sw cyl" style="background:#dbeafe;border-color:#1d4ed8"></span>資料庫裡的一張表</li>
-        <li><span class="sw" style="background:#f1f5f9;border-color:#64748b;border-width:2px"></span>外部服務，例如 LLM</li>
-        <li><span class="sw" style="background:transparent;border-color:#7c3aed;border-width:3px"></span>紫色粗框：這個 Part 新加的</li>
+        <li><span class="sw r-frontend"></span><span class="sw r-backend"></span><span class="sw r-service"></span>顏色 = 所在分層，第一層、第二層、第三層依序換色</li>
+        <li><span class="sw r-database cyl"></span>資料庫裡的一張表</li>
+        <li><span class="sw r-ext"></span>外部服務，例如 LLM</li>
+        <li><span class="sw r-test"></span>測試檔，可用「顯示測試」隱藏</li>
+        <li><span class="sw solid"></span>實線框：這個檔案已經看過</li>
+        <li><span class="sw dash"></span>虛線框：還沒看</li>
+        <li><span class="sw r-frontend para"></span>平行四邊形：只放資料或設定、本身不做事的檔案</li>
+        <li><span class="sw fresh"></span>洋紅粗框：這個 Part 新加的</li>
       </ul>
     </section>
     <section>
       <h3>箭頭代表什麼</h3>
       <ul class="keys">
         <li><span class="ln"></span>呼叫或讀寫；箭頭上的字是「送什麼 → 拿回什麼」</li>
-        <li><span class="ln thick"></span>跨層的呼叫，例如後端呼叫通知服務</li>
+        <li><span class="ln thick main"></span>跨層的呼叫，例如後端呼叫通知服務</li>
         <li><span class="ln dot"></span>往回傳的結果</li>
         <li><span class="num">①②③</span>同一個地方依序做的步驟，一步做完才做下一步</li>
       </ul>
@@ -311,14 +385,19 @@ flowchart TD
  },
  {
   "tab": "Part 2 · 查詢與通知",
-  "note": "branch 2：GET /orders 和寄確認信；紫框是這個 part 新加的。"
+  "note": "branch 2：GET /orders 和寄確認信；洋紅粗框是這個 part 新加的。"
  }
 ]
 </script>
 
 <script type="module">
   import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
-  const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+  // Theme: the saved choice, else the system's. Colours live in CSS tokens (archify classic palette).
+  const root = document.documentElement;
+  let theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  try { theme = localStorage.getItem("theme") || theme; } catch {}
+  root.dataset.theme = theme;
+  const tok = name => getComputedStyle(root).getPropertyValue(name).trim();
   // ELK routes edges at right angles and keeps layers apart; without it, dagre with stepped edges.
   let layout = "dagre";
   try {
@@ -326,13 +405,150 @@ flowchart TD
     mermaid.registerLayoutLoaders(elkLayouts);
     layout = "elk";
   } catch {}
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: dark ? "dark" : "default",
-    layout,
-    elk: { mergeEdges: false, nodePlacementStrategy: "NETWORK_SIMPLEX" },
-    flowchart: { curve: "step", nodeSpacing: 40, rankSpacing: 60 },
-  });
+  // Mermaid derives shades from themeVariables, so they get solid colours; translucent fills go in classDef.
+  function setupMermaid() {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "base",
+      layout,
+      elk: { mergeEdges: false, nodePlacementStrategy: "NETWORK_SIMPLEX" },
+      flowchart: { curve: "step", nodeSpacing: 44, rankSpacing: 64, padding: 12 },
+      themeVariables: {
+        darkMode: theme === "dark",
+        fontFamily: getComputedStyle(document.body).fontFamily,
+        fontSize: "13px",
+        background: tok("--bg"),
+        primaryColor: tok("--card"),
+        primaryBorderColor: tok("--r-frontend"),
+        primaryTextColor: tok("--fg"),
+        mainBkg: tok("--card"),
+        nodeBorder: tok("--r-frontend"),
+        textColor: tok("--fg"),
+        lineColor: tok("--arrow"),
+        clusterBkg: tok("--lane-solid"),
+        clusterBorder: tok("--lane-stroke"),
+        titleColor: tok("--muted"),
+        edgeLabelBackground: tok("--mask"),
+      },
+    });
+  }
+  setupMermaid();
+  document.getElementById("themeBtn").onclick = () => {
+    theme = theme === "dark" ? "light" : "dark";
+    root.dataset.theme = theme;
+    try { localStorage.setItem("theme", theme); } catch {}
+    setupMermaid();
+    draw();
+  };
+  // Role colours. A box takes the colour of its top-level layer (in drawing order), so no data
+  // change is needed: DB tables, external services and tests have their own colour, and the
+  // read state shows as a solid or dashed border. Mermaid applies `style` lines inline, over classes.
+  const LAYER_ROLES = ["frontend", "backend", "service", "ext"];
+  function styleNodes(text) {
+    const classes = {};
+    const nodes = [];
+    const layers = [];
+    const stack = [];
+    const styled = new Set();
+    for (const line of text.split("\n")) {
+      const sub = line.match(/^\s*subgraph (\w+)/);
+      if (sub) { if (!stack.length) layers.push(sub[1]); stack.push(sub[1]); continue; }
+      if (line.trim() === "end") { stack.pop(); continue; }
+      const cls = line.match(/^\s*class ([\w,]+) (\w+)/);
+      if (cls) { for (const id of cls[1].split(",")) (classes[id] ||= new Set()).add(cls[2]); continue; }
+      const st = line.match(/^\s*style (\w+)/);
+      if (st) { styled.add(st[1]); continue; }
+      const node = line.match(/^\s*(\w+)\s*(\[\(|\(\[|[\[\(\{"])/);
+      if (node && !ARROW.test(line)) nodes.push({ id: node[1], shape: node[2], layer: stack[0] || null });
+    }
+    // A layer holding only DB tables is the database layer; the others take the next colour in turn.
+    const isDbOnly = id => nodes.some(n => n.layer === id) && nodes.filter(n => n.layer === id).every(n => n.shape === "[(");
+    const codeLayers = layers.filter(id => !isDbOnly(id));
+    const layerRole = id => isDbOnly(id) ? "database" : LAYER_ROLES[codeLayers.indexOf(id) % LAYER_ROLES.length];
+    const roleOf = n => {
+      const c = classes[n.id] || new Set();
+      if (n.id.startsWith("t_") || c.has("test")) return "test";
+      if (c.has("ext")) return "ext";
+      if (n.shape === "[(") return "database";
+      return n.layer ? layerRole(n.layer) : "frontend";
+    };
+    const out = [text];
+    for (const n of nodes) {
+      const c = classes[n.id] || new Set();
+      const role = roleOf(n);
+      const isTodo = c.has("todo") || c.has("datatodo");
+      const isFresh = c.has("fresh");
+      const parts = [
+        `fill:${tok(`--r-${role}-fill`)}`,
+        `stroke:${isFresh ? tok("--k-fresh") : tok(`--r-${role}`)}`,
+        `stroke-width:${isFresh ? 3 : role === "ext" ? 2 : 1.5}px`,
+        `color:${isTodo ? tok("--r-todo-text") : tok("--fg")}`,
+      ];
+      if (isTodo) parts.push("stroke-dasharray:5 4");
+      out.push(`    style ${n.id} ${parts.join(",")}`);
+    }
+    // Top-level layers: a dashed boundary in the layer's colour, as archify draws regions.
+    layers.forEach(id => {
+      if (styled.has(id)) return;   // a whole new block already carries the fresh outline
+      const role = layerRole(id);
+      out.push(`    style ${id} fill:${tok(`--r-${role}-fill`).slice(0, 7)}0d,stroke:${tok(`--r-${role}`)},stroke-width:1.5px,stroke-dasharray:6 4`);
+    });
+    return out.join("\n");
+  }
+  // archify puts a boundary's title at its top-left corner; Mermaid centres it. The title sits on the
+  // top border with a backing, like a fieldset legend, so it can be wider than a box pulled in to its contents.
+  function alignClusterLabels() {
+    diagram.querySelectorAll("g.cluster").forEach(cluster => {
+      const rect = cluster.querySelector(":scope > rect");
+      const label = cluster.querySelector(":scope > .cluster-label");
+      const object = label && label.querySelector("foreignObject");
+      if (!rect || !object) return;
+      const height = Number(object.getAttribute("height")) || 18;
+      object.setAttribute("width", Number(object.getAttribute("width")) + 12);
+      label.setAttribute("transform", `translate(${Number(rect.getAttribute("x")) + 8}, ${Number(rect.getAttribute("y")) - height / 2})`);
+      const inner = object.firstElementChild;
+      if (inner) Object.assign(inner.style, { background: tok("--label-bg"), padding: "0 6px", display: "inline-block" });
+      const stroke = rect.style.stroke;
+      if (stroke) label.querySelectorAll("*").forEach(el => { el.style.setProperty("color", stroke, "important"); el.style.setProperty("fill", stroke, "important"); });
+    });
+  }
+  // Mermaid widens a box after layout when its title is wider than its contents, so the box then
+  // covers edges that were routed beside it. Pull each box back to its contents, innermost first;
+  // the title then sits on the top border (see alignClusterLabels), so a long one may run past the box.
+  function fitClusters(text) {
+    const children = {};
+    const order = [];
+    const stack = [];
+    for (const line of text.split("\n")) {
+      const sub = line.match(/^\s*subgraph (\w+)/);
+      if (sub) {
+        if (stack.length) (children[stack[stack.length - 1]] ||= []).push({ cluster: sub[1] });
+        order.push(sub[1]); stack.push(sub[1]); continue;
+      }
+      if (line.trim() === "end") { stack.pop(); continue; }
+      const node = line.match(/^\s*(\w+)\s*(\[\(|\(\[|[\[\(\{"])/);
+      if (node && stack.length && !ARROW.test(line)) (children[stack[stack.length - 1]] ||= []).push({ node: node[1] });
+    }
+    const clusterOf = id => diagram.querySelector(`g.cluster[id="${id}"], g.cluster[id$="-${id}"]`);
+    const nodeOf = id => [...diagram.querySelectorAll("g.node")].find(n => (n.id.match(/flowchart-(\w+?)-\d+$/) || [])[1] === id);
+    const PAD = 12;
+    for (const id of [...order].reverse()) {
+      const cluster = clusterOf(id);
+      const rect = cluster && cluster.querySelector(":scope > rect");
+      const kids = (children[id] || []).map(k => k.node ? nodeOf(k.node) : clusterOf(k.cluster)?.querySelector(":scope > rect")).filter(Boolean);
+      if (!rect || !kids.length) continue;
+      // Measure on screen, then convert back to the rect's own units, whatever the nesting.
+      const box = rect.getBoundingClientRect();
+      const scale = box.width / Number(rect.getAttribute("width"));
+      const left = Math.min(...kids.map(k => k.getBoundingClientRect().left));
+      const right = Math.max(...kids.map(k => k.getBoundingClientRect().right));
+      const x = Number(rect.getAttribute("x")) + (left - box.left) / scale - PAD;
+      const width = (right - left) / scale + PAD * 2;
+      if (width >= Number(rect.getAttribute("width"))) continue;
+      rect.setAttribute("x", x);
+      rect.setAttribute("width", width);
+    }
+  }
 
   const source = document.getElementById("src").textContent;
   const toggle = document.getElementById("showTests");
@@ -387,7 +603,7 @@ flowchart TD
       return [line];
     });
     if (added.length) kept.push(`    class ${added.join(",")} fresh`);
-    for (const id of addedBlocks) kept.push(`    style ${id} stroke:#7c3aed,stroke-width:3.5px`);
+    for (const id of addedBlocks) kept.push(`    style ${id} stroke:${tok("--k-fresh")},stroke-width:3px`);
     return kept.join("\n");
   }
 
@@ -407,14 +623,17 @@ flowchart TD
   });
 
   async function draw() {
+    await document.fonts.ready;
     [...tabs.children].forEach((b, i) => b.setAttribute("aria-selected", String(i === part)));
     document.getElementById("partNote").textContent = PARTS[part].note;
     const partSource = sourceForPart(part);
     const text = toggle.checked
       ? partSource
       : partSource.split("\n").filter(line => !/\bt_\w+/.test(line)).join("\n");
-    const { svg } = await mermaid.render("graph" + Date.now(), text);
+    const { svg } = await mermaid.render("graph" + Date.now(), styleNodes(text));
     diagram.innerHTML = svg;
+    fitClusters(text);
+    alignClusterLabels();
     renderedEdges = listEdges(text);
     attachTips();
     naturalWidth = diagram.querySelector("svg").viewBox.baseVal.width;
@@ -550,8 +769,8 @@ flowchart TD
     node.classList.add("picked");
     node.querySelectorAll(SHAPES).forEach(shape => {
       shape.dataset.style = shape.getAttribute("style") || "";
-      shape.style.setProperty("stroke", "#dc2626", "important");
-      shape.style.setProperty("stroke-width", "4px", "important");
+      shape.style.setProperty("stroke", tok("--k-hot"), "important");
+      shape.style.setProperty("stroke-width", "3px", "important");
     });
   }
   function closePanel() { overlay.classList.remove("open"); document.body.classList.remove("drawer-open"); highlightEdges(null); pickNode(null); }

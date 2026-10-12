@@ -11,7 +11,7 @@
 | 區塊 | 內容 |
 |---|---|
 | `<title>`、`<h1>` | `#<issue> 架構圖` |
-| `<script type="text/plain" id="src">` | Mermaid `flowchart TD` 原始碼；`classDef` 照範本保留 |
+| `<script type="text/plain" id="src">` | Mermaid `flowchart TD` 原始碼；`classDef` 照範本保留（畫圖時頁面會重新上色） |
 | `<script type="application/json" id="details">` | 每個節點的說明，key 是節點 id |
 | `<script type="application/json" id="parts">` | Part 分頁 |
 | 「沒畫進圖的檔案」清單 | 每個變更檔案若不畫成節點：`<li data-file="repo 相對路徑"><code>路徑</code>原因</li>` |
@@ -33,8 +33,9 @@
 | 外部服務 | `id[外部 LLM API]` | `ext` |
 | 測試檔 | `t_id([test_x.py])` | `test` |
 
+- 方框顏色由頁面在畫圖時依 archify classic 配色決定：每個最外層 subgraph 是一層，依序取青、綠、橘、琥珀色；只放 DB table 的層和所有 DB table 是紫色；`ext` 琥珀色，測試灰色。class 決定框線：看過（`seen`、`data`）實線，還沒看（`todo`、`datatodo`）虛線。最外層 subgraph 要對應真實分層，顏色才有意義。
 - 每個節點恰好出現在一行 `class` 中，用上表其中一個 class。測試節點、且只有測試節點的 id 以 `t_` 開頭：關掉「顯示測試」時，含 `t_` 的行整行移除。
-- `fresh`（紫色粗框，這個 Part 新加的）由頁面依 Part 標記自動加上，不手寫。
+- `fresh`（洋紅粗框，這個 Part 新加的）由頁面依 Part 標記自動加上，不手寫。
 - `.scss` 不畫方框，列在用到它的 tsx 方框的 `styles` 與 `files`。只包一層、沒有資料流的小 UI 元件可不畫，放進「沒畫進圖的檔案」並寫原因。
 
 ## src：箭頭
@@ -50,7 +51,7 @@
 
 - 一個 issue 拆成多個疊在一起的 branch 時，每個 Part 對應一個 branch，依合併順序編號。
 - node、`subgraph`、`end` 行開頭加 `N|`（N = 第一次出現的 Part）；箭頭與 `class` 行不加，兩端節點都畫出來時才畫。
-- Part N 分頁畫出 1..N；N > 1 時，第 N 個 Part 新加的節點加紫框，整個新 subgraph 只框外框。
+- Part N 分頁畫出 1..N；N > 1 時，第 N 個 Part 新加的節點加洋紅粗框，整個新 subgraph 只框外框。
 - 只有一個 branch 時全部標 `1|`，`parts` 只放「全部」與 Part 1。
 
 ## details
@@ -98,6 +99,6 @@ python "<skill-dir>/scripts/workflow_check.py" coverage --inventory <changes.jso
 
 `diagram` 檢查結構並列出仍是虛線的節點；`coverage` 檢查每個變更檔案都在 `files` 或 `data-file` 中。兩者都不能判斷箭頭是否符合實際呼叫，仍需人工核對。
 
-頁面從 jsDelivr 載入 Mermaid 11 與 ELK 版面，需要網路。使用現有瀏覽器或可用的瀏覽器自動化能力開啟 HTML，核對主圖、Part、測試切換、縮放與錯誤提示；取得真正渲染的 SVG 節點數，與 `diagram` 回報的 `nodes` 比較。不可把 HTML 結構檢查當成渲染驗證。
+頁面從 jsDelivr 載入 Mermaid 11 與 ELK 版面、從 Google Fonts 載入 JetBrains Mono，需要網路。使用現有瀏覽器或可用的瀏覽器自動化能力開啟 HTML，核對主圖、Part、測試切換、縮放、深淺兩種主題（◐ 按鈕）與錯誤提示；取得真正渲染的 SVG 節點數，與 `diagram` 回報的 `nodes` 比較。不可把 HTML 結構檢查當成渲染驗證。
 
 需要 headless CLI 時先定位實際瀏覽器執行檔，不固定作業系統或 Chrome 安裝路徑。沒有網路或瀏覽器時保留 Mermaid 原始碼與結構檢查結果，在交付紀錄明確寫出渲染及互動未驗證；不為檢查而自行安裝瀏覽器。
