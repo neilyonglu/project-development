@@ -71,7 +71,7 @@
 - `funcs`：程式檔列每個函式；main 上已存在的檔案只列本次改到的。測試節點列每個 test 檢查什麼。資料、DB、endpoint 可省略。
 - `files`：repo 相對路徑；同一檔案可出現在多個方框（例如同一 service 的多個 endpoint）。樣式檔、`__init__.py` 等附屬檔列在所屬方框。coverage 檢查讀這裡與 `data-file`。
 - 既有 DB table、外部服務沒有對應檔案時可省略 `files`。
-- DB table 可列 `"columns": [["status", "varchar", "pending · paid · cancelled"]]`（名稱、型別、說明），從實際 schema（例如 `information_schema.columns`）列出全部欄位，不只列有用到的。程式檔用 `"reads"`、`"writes"` 寫 `"table.column"`，`table` 是 DB 方框的標籤；已在前面 Part 畫出的檔案在 Part N 才多用某欄時加 `N|`（`"2|orders.status"`）。欄位只在點擊卡片顯示，不畫在圖上：點 DB 方框列出全部欄位，有用到的亮起並標出目前 Part 分頁下誰讀（R）、誰寫（W）；點程式檔列出它用到的欄位。
+- DB table 可列 `"columns": [["status", "varchar", "pending · paid · cancelled"]]`（名稱、型別、說明），從實際 schema（例如 `information_schema.columns`）列出全部欄位，不只列有用到的。程式檔用 `"reads"`、`"writes"` 寫 `"table.column"`，`table` 是 DB 方框的標籤；已在前面 Part 畫出的檔案在 Part N 才多用某欄時加 `N|`（`"2|orders.status"`）。每欄說明寫成「一句摘要；細節」：卡片那一列只顯示「；」前的那一句（太長可以換行），之後的細節收在展開列，和讀寫者一起出現。欄位只在點擊卡片顯示，不畫在圖上：點 DB 方框列出全部欄位，有用到的亮起並標出目前 Part 分頁下誰讀（R）、誰寫（W）；點程式檔列出它用到的欄位。
 
 ## parts
 

@@ -120,13 +120,16 @@
   #panel .colbar .kind { margin:0; }
   #panel .colbar label { font-size:11px; color:var(--muted); }
   /* Column names stay on one line; the type and note wrap instead. */
-  #panel .cols li { grid-template-columns:max-content minmax(0, max-content) 1fr; }
+  #panel .cols li { grid-template-columns:max-content max-content minmax(0, 1fr); }
   #panel .cols li > code { white-space:nowrap; word-break:normal; max-width:none; }
-  #panel .cols .type { font-size:11px; color:var(--muted); }
+  #panel .cols .type { font-size:11px; color:var(--muted); white-space:nowrap; }
+  /* The row shows the note's first sentence, up to its first "；" (it may wrap); the rest opens below it. */
+  #panel .cols .note { min-width:0; }
+  #panel .cols .uses .more { margin:4px 0 2px 12px; font-size:12px; line-height:1.6; color:var(--fg); }
   #panel .cols .uses { grid-column:1 / -1; }
   /* The arrow sits at the right end of the column's row, so a folded row takes no extra line. */
-  #panel .cols li.used { position:relative; padding-right:26px; cursor:pointer; }
-  #panel .cols li.used:hover { background:color-mix(in srgb, var(--r-frontend) 6%, transparent); }
+  #panel .cols li.expandable { position:relative; padding-right:26px; cursor:pointer; }
+  #panel .cols li.expandable:hover { background:color-mix(in srgb, var(--r-frontend) 6%, transparent); }
   #panel .cols .uses summary { position:absolute; top:6px; right:0; width:22px; height:22px; display:grid; place-items:center;
                                cursor:pointer; list-style:none; border-radius:6px; color:var(--muted); font-size:13px; }
   #panel .cols .uses summary:hover { background:var(--pill); color:var(--r-frontend); }
@@ -800,13 +803,22 @@ flowchart TD
         item.className = users.length ? "used" : "unused";
         const code = document.createElement("code"); code.textContent = name;
         const typeText = document.createElement("span"); typeText.className = "type"; typeText.textContent = type;
-        const noteText = document.createElement("span"); noteText.textContent = note;
+        // The row shows the note up to its first "；"; the rest of the note opens with the readers and writers.
+        const [summary, ...rest] = note.split("；");
+        const more = rest.join("；");
+        const noteText = document.createElement("span"); noteText.className = "note"; noteText.textContent = summary;
         item.append(code, typeText, noteText);
-        if (users.length) {
-          // Folded behind a small arrow; opening it lists who reads and who writes, one per line.
+        if (users.length || more) {
+          // Folded behind a small arrow; opening it shows the rest of the note, then who reads and who writes.
+          item.classList.add("expandable");
           const who = document.createElement("details");
           who.className = "uses";
           who.append(document.createElement("summary"));
+          if (more) {
+            const text = document.createElement("div");
+            text.className = "more"; text.textContent = more;
+            who.append(text);
+          }
           for (const use of users) {
             const tag = document.createElement("span");
             tag.className = "use"; tag.append(modeChip(use.mode), nameOf(use.id));
