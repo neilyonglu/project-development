@@ -824,6 +824,8 @@ flowchart TD
       : partSource.split("\n").filter(line => !/\bt_\w+/.test(line)).join("\n");
     const text = collapseGroups(visible);
     const { svg } = await mermaid.render("graph" + Date.now(), styleNodes(text, visible));
+    const keep = view || { left: diagram.scrollLeft, top: diagram.scrollTop };
+    view = null;
     diagram.innerHTML = svg;
     fitClusters(text);
     alignClusterLabels();
@@ -832,9 +834,18 @@ flowchart TD
     attachTips();
     naturalWidth = diagram.querySelector("svg").viewBox.baseVal.width;
     applyZoom();
+    diagram.scrollLeft = keep.left;
+    diagram.scrollTop = keep.top;
   }
 
   const diagram = document.getElementById("diagram");
+  // The view stays where it was, across a redraw (fold, unfold, Part, tests) and across a reload.
+  const SCROLL_KEY = "scroll:" + location.pathname;
+  let view = null;
+  try { view = JSON.parse(localStorage.getItem(SCROLL_KEY)); } catch {}
+  diagram.addEventListener("scroll", () => {
+    try { localStorage.setItem(SCROLL_KEY, JSON.stringify({ left: diagram.scrollLeft, top: diagram.scrollTop })); } catch {}
+  });
 
   // The edges in the order Mermaid draws them, as [from, to], so a clicked box can find its own.
   let renderedEdges = [];
