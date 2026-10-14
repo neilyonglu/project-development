@@ -35,8 +35,8 @@ description: Integrate project-specific architecture, conventions and tool depen
 | 階段 | 使用時機 | 細項流程 | 產出 |
 |---|---|---|---|
 | Issue／需求分析 | 讀取需求、釐清範圍、畫需求架構、實作前評估 | [issue-analysis](references/zh-TW/issue-analysis.md) | 依專案工作單位維護五項分析文件 |
-| 專案雛形建構 | 熟悉專案、確認框架與 DB 欄位設計，或建立已確認的骨架 | [project-scaffold](references/zh-TW/project-scaffold.md) | 專案與逐表設計說明；要求建構時再產出骨架、設定、DB 變更檔及基本驗證 |
-| 操作流程與資料流確認 | 理解操作如何串起需求、module 與 DB，或確認跨層流程 | [operation-flow](references/zh-TW/operation-flow.md) | 流程／時序圖、逐步讀寫說明、狀態與失敗分支、待確認事項 |
+| 操作流程與資料流確認 | 照預期流程一步一步走，每步碰到的 module 與 DB 再去理解 | [operation-flow](references/zh-TW/operation-flow.md) | 流程／時序圖、逐步讀寫說明、狀態與失敗分支、待確認事項 |
+| 專案雛形建構 | 設計流程需要的表，或建立已確認的骨架 | [project-scaffold](references/zh-TW/project-scaffold.md) | 專案與逐表設計說明；要求建構時再產出骨架、設定、DB 變更檔及基本驗證 |
 | 介面契約確認 | 確認跨 module 輸入、輸出、錯誤及前端 Props 對應 | [interface-contract](references/zh-TW/interface-contract.md) | 介面欄位與驗證規則、結果／錯誤契約、UI 資料對應及差異 |
 | 業務規則與驗收情境確認 | 確認不同資料、操作及邊界情境的預期行為 | [business-acceptance](references/zh-TW/business-acceptance.md) | 有需求依據的具體驗收案例、預期資料變化與待確認問題 |
 | 實作拆解與順序確認 | 將已確認的設計與驗收案例拆成可執行工作 | [implementation-plan](references/zh-TW/implementation-plan.md) | 現況缺口、工作項目、相依順序、完成條件及第一步 |
@@ -52,6 +52,7 @@ description: Integrate project-specific architecture, conventions and tool depen
 ## 選擇與銜接
 
 - 使用者只要求分析時，執行 issue-analysis；只要求建構時，執行 project-scaffold，先確認已有需求與架構依據。
+- 先流程、後資料表：理解或核對需求時，從 operation-flow 開始，照預期流程從觸發走到結果。流程走到某一步要讀寫某張表時，才去讀或核對那張表，而且只看這一步用到的欄位；查到的結果記在這一步底下。不要在用到之前先盤點或核對資料表。
 - 使用者授權跨階段工作時，依實際需要銜接；上一階段完成不代表自動獲得下一階段的執行授權。
 - 使用者正在理解專案或確認設計時，停留在說明與方案階段；不得把討論或試看流程解讀為實際建構授權。
 - 會改變框架、核心資料模型、權限或寫入方式的未解需求，阻擋相依建構；不阻擋其他可獨立完成的工作。

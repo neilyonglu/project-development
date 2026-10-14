@@ -37,11 +37,11 @@ Explain every in-scope table, including reused tables: business purpose, row mea
 - Check applicable dataset/tenant, timezones/business dates, lifecycle/audit without adding unrequested model features.
 - Label design/model/metadata/migration declarations versus actual DB verification. Record discrepancies/missing definitions; Python types do not establish DB length/default/constraints.
 
-When asked to explain table by table, explain one and wait for the next request. Keep formal design in the original work document; this guide does not fix an issue's field names.
+Take tables in the order the operation flow reaches them, not as an up-front inventory. When asked to explain table by table, explain one and wait for the next request. Keep formal design in the original work document; this guide does not fix an issue's field names.
 
 Add ER diagrams if needed. For changes to existing data types, required fields, uniqueness or relationships explain conversion, backfill and compatibility; do not convert NULL to zero without confirmed semantics.
 
-For connecting tables/modules in an operation, use [operation flow](operation-flow.md) before construction as appropriate to existing authorization.
+Start from [operation flow](operation-flow.md) to find which tables an operation touches; design or explain those tables here, then proceed to construction as appropriate to existing authorization.
 
 ## 4. Schema changes and companions
 

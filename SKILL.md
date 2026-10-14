@@ -35,8 +35,8 @@ Reuse an existing profile and check only relevant rules and changes. Context int
 | Stage | When to use | Guide | Deliverable |
 |---|---|---|---|
 | Issue / requirements analysis | Clarify requirements, intended architecture and implementation impact | [issue-analysis](references/issue-analysis.md) | Five-part analysis under the project's document unit |
-| Project scaffolding | Understand the framework and DB design or build an agreed skeleton | [project-scaffold](references/project-scaffold.md) | Framework/table design; skeleton, config, migration and basic verification when construction is requested |
-| Operations and data flow | Explain how an operation connects requirements, modules and DB | [operation-flow](references/operation-flow.md) | Editable flow/sequence diagrams, reads/writes, states, failure branches and open questions |
+| Operations and data flow | Walk the intended process step by step and read the modules and DB each step touches | [operation-flow](references/operation-flow.md) | Editable flow/sequence diagrams, reads/writes, states, failure branches and open questions |
+| Project scaffolding | Design the tables the flow needs or build an agreed skeleton | [project-scaffold](references/project-scaffold.md) | Framework/table design; skeleton, config, migration and basic verification when construction is requested |
 | Interface contracts | Confirm cross-module inputs, outputs, errors and UI Props mappings | [interface-contract](references/interface-contract.md) | Field/validation tables, result/error contracts, UI mappings and discrepancies |
 | Business acceptance | Confirm expected behavior for data, operations and boundaries | [business-acceptance](references/business-acceptance.md) | Source-backed concrete acceptance cases, data changes and unresolved questions |
 | Implementation planning | Turn confirmed design and acceptance into executable work | [implementation-plan](references/implementation-plan.md) | Gaps, tasks, dependencies, completion conditions and first step |
@@ -50,6 +50,7 @@ Build implementation diagrams, including file walkthrough progress, from the sel
 ## Selection and handoffs
 
 - Analysis-only requests use issue-analysis; construction requests use project-scaffold with sufficient requirements/architecture evidence.
+- Flow before tables: to understand or verify a requirement, start from operation-flow and walk the intended process from trigger to outcome. Read or verify a DB table only when a step reaches it, and only the fields that step needs; record what was found against that step. Do not inventory or check tables ahead of the step that uses them.
 - Continue across stages within existing authorization. Completing one stage does not independently authorize the next, and prior authorization does not need to be requested again.
 - Requests to understand or discuss a design stay in explanation/proposal mode. Do not infer construction permission from a discussion or preview.
 - Unresolved choices affecting the framework, core model, permissions or writes block their dependent work, not independent work.

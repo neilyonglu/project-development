@@ -1,10 +1,10 @@
 # Operations and Data Flow
 
-After understanding the framework, modules and tables, start from a user action or system event and explain how requirements are achieved through code and data. This stage delivers explanation/design, not construction, tests or DB operations merely because a flow was discussed.
+Start here to understand a requirement: begin from a user action or system event and explain, step by step, how requirements are achieved through code and data. Read the framework, modules and tables only as a step reaches them. This stage delivers explanation/design, not construction, tests or DB operations merely because a flow was discussed.
 
 ## Inputs and evidence
 
-Read the work's analysis, module locations and relevant table design. Trace actual entrypoints, calls and reads/writes for existing flows; propose new flows from requirements. Separate expected behavior, current implementation and open questions. Existing code does not resolve conflicting requirements.
+Read the work's analysis and module locations. When a step first reads or writes a table, check that table's real columns and data for the fields the step uses, and record the result against the step; leave tables no step has reached for later. Trace actual entrypoints, calls and reads/writes for existing flows; propose new flows from requirements. Separate expected behavior, current implementation and open questions. Existing code does not resolve conflicting requirements.
 
 ## Explain a concrete scenario
 
